@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><a href="/documents/<%= name %>"><%= name %></a></h1>
+
+    <h3><%= id %></h3>
+    <div>
+    <% for (var i in document.tokens) { var token = document.tokens[i]; %>
+      <span style="border: solid 1px #cccccc; background-color: #eeeeee; margin-left: 3px;"><%= token.w %></span>
+    <% } %>
+    </div>
+
+    <h3>TF/IDF</h3>
+    <%- render_partial('clusters/loc', {render_partial: render_partial, name: name, meta: meta, loc: document.loc, dictionary: dictionary}) %>
+
+
+    <h1>Clusters</h1>
+    <% for (var i in document.cs) { var c = document.cs[i]; %>
+      <%- render_partial('clusters/cluster', {render_partial: render_partial, name: name, meta: meta, name: meta.kmeans.cluster, cluster: c.cluster, val: c.s, dictionary: dictionary}) %>
+    <% } %>
+
+  </body>
+</html>

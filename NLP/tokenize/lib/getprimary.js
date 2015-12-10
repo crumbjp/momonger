@@ -1,0 +1,1 @@
+print(RS.primary.host);

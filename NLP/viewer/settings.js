@@ -1,0 +1,1 @@
+../../core/conf/settings.js

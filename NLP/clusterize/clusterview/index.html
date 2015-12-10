@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="content-style-type" content="text/css">
+    <meta http-equiv="content-script-type" content="text/javascript">
+    <meta name="description" content="">
+    <title>momonger NLP Cluster graph</title>
+    <link rel="stylesheet" type="text/css" media="" href="http://">
+    <style>
+     #cluster > div {
+       float: left;
+     }
+     #origin {
+       height: 300px;
+       width: 300px;
+     }
+     pre {
+       margin : 0;
+     }
+     h6 {
+       margin : 15px 0 0 0;
+     }
+     input[type="text"] {
+       width: 400px;
+     }
+     div.field {
+       height: 500px;
+       width: 500px;
+       border: 2px solid #888888;
+     }
+    </style>
+  </head>
+  <body>
+    <form action="">
+      <h6>JSONP path</h6>
+      <input class="jsonp" type="text" name="h" value=""></input>
+      <h6>Collection prefix</h6>
+      <pre>ex>
+    test.kmeans.vector.tfidf.token.sampledoc.fin
+    test.kmeans.samplevector.fin
+      </pre>
+      <input class="col" type="text" name="c" value=""></input>
+      <br>
+      <input type="submit" value="submit"></input>
+    </form>
+    <div id="cluster"><div ord="999" /></div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.flot.js"></script>
+    <script language=javascript>
+     <!--
+     $(function(){
+
+       function getUrlVars(){
+         var vars = [], hash;
+         var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+         for(var i = 0; i < hashes.length; i++) {
+                                                 hash = hashes[i].split('=');
+                                                 vars.push(hash[0]);
+                                                 vars[hash[0]] = decodeURIComponent(hash[1]);
+                                                 }
+         return vars;
+       }
+
+       function sort(arr,comparator){
+         if ( arr.length < 1 ) {
+           return arr;
+         }
+         var c=arr.shift();
+         var b=[];
+         var a=[];
+         for ( var i in arr ) {
+           if ( comparator(arr[i],c) ) {
+             b.push(arr[i]);
+           }else{
+             a.push(arr[i]);
+           }
+         }
+         return sort(b,comparator).concat(c).concat(sort(a,comparator));
+       }
+
+       function getall(rows,callback){
+         var all = {};
+         var dim = 0;
+         var values = [];
+         for ( var r in rows ) {
+           if ( rows[r]._id === '.meta' ) {
+	           continue;
+           }
+           var value = callback(rows[r]);
+           for ( var v in value ) {
+	           values.push({v:v,s:value[v]});
+           }
+         }
+         //values = sort(values,function(a,b){return a.s > b.s;});
+         for ( var i in values ) {
+           var value = values[i];
+           if ( ! ( value.v in all )  ){
+	           all[value.v] = dim++;
+           }
+         }
+
+         return {dim:dim,all:all};
+       }
+       function getloc(all,value,norm){
+         var unit = 0.5*Math.PI/(all.dim-1);
+         var loc = [0,0];
+         var ndim = 0;
+         for ( var v in value ) {
+           var rad = all.all[v]*unit;
+           var div = Math.cos(rad) + Math.sin(rad);
+           loc[0] += value[v]*Math.cos(rad) / div;
+           loc[1] += value[v]*Math.sin(rad) / div;
+           ndim++;
+         }
+         if ( norm ) {
+           return [ Math.atan(loc[0]/loc[1]), Math.sqrt(loc[0]*loc[0]+loc[1]*loc[1]) ];
+         }else{
+           return loc;
+         }
+       }
+
+       function view(n,url1,url2) {
+         $.ajax({
+           url:url1,
+           dataType: 'jsonp',
+           data: {
+	           limit: 100000
+           },
+           jsonp: 'jsonp',
+           success: function(cdata,type){
+	           var colors = [];
+	           var pdata = [];
+	           if ( cdata.total_rows === 0 ) {
+	             return;
+	           }
+             //	var cs = [];
+             var cs = {};
+	           var all = getall(cdata.rows,function(row){return row.loc;});
+             var normalize = false;
+	           for( var r in cdata.rows ) {
+	             if ( cdata.rows[r]._id === '.meta' ) {
+                 normalize = cdata.rows[r].normalize;
+	               break;
+	             }
+             }
+	           for( var r in cdata.rows ) {
+	             var value = cdata.rows[r];
+	             var loc = getloc(all,value.loc,normalize);
+               cs[cdata.rows[r]._id] = [loc];
+               //	  cs.push(loc);
+	           }
+             //	colors.push('#ff0000');
+             //	pdata.push({
+             //	  label:"cluster",
+             //	  yaxis:1,
+             //	  points: { show:true, radius:5,lineWidth:3 },
+             //	  data: cs
+             //	});
+
+	           $.ajax({
+	             url: url2,
+	             dataType: 'jsonp',
+	             data: {
+	               limit: 100000
+	             },
+	             jsonp: 'jsonp',
+	             success: function(data,type){
+	               var ps = {};
+	               var idx = {};
+	               for ( var r in data.rows ) {
+		               if ( data.rows[r]._id === '.meta' ) {
+		                 continue;
+		               }
+		               var value = data.rows[r];
+		               var loc = getloc(all,value.loc,normalize);
+		               if ( ! ps[value.c] ) {
+		                 ps[value.c] = [];
+		                 idx[value.c]= [];
+		               }
+		               ps[value.c].push(loc);
+		               idx[value.c].push(data.rows[r]._id);
+	               }
+
+                 var keys = [];
+	               for ( var p in ps ) {
+                   keys.push(p);
+                 }
+                 keys = sort(keys,function(a,b){ return a < b; } );
+
+	               var c=0x000000;
+	               for ( var k in keys ) {
+                   var p = keys[k];
+		               c += 0x113985;
+		               var cstr = c.toString(16);
+		               var clen = cstr.length;
+		               colors.push('#'+cstr.substring(clen-6,clen));
+		               colors.push('#'+cstr.substring(clen-6,clen));
+
+  	               pdata.push({
+	                   label:"c"+p,
+	                   yaxis:1,
+	                   points: { show:true, radius:5,lineWidth:3 },
+	                   data: cs[p]
+	                 });
+
+		               pdata.push({
+		                 label:p,
+		                 yaxis:1,
+		                 idx:idx[p],
+		                 data: ps[p]
+		               });
+	               }
+
+		             $('#cluster').find('> div').each(function(){
+		               if ( $(this).attr('ord') > n ) {
+		                 var div = $('<div />')
+		                    .attr('ord',n)
+		                    .insertBefore($(this));
+
+		                 $('<h3/>')
+		                    .text('== ' + n + '==')
+		                    .appendTo(div);
+
+		                 var target = $('<div />')
+		                    .attr('id','cluster'+n)
+		                    .addClass('field')
+		                    .appendTo(div);
+		                 plot(target,pdata,colors);
+		                 return false;
+		               }
+		             });
+	             }
+	           });
+           }
+         });
+       }
+
+       var args = getUrlVars();
+       if ( ! args.h ) {
+         $('input.jsonp').val(document.location.origin+':28017');
+         return;
+       }
+       if ( ! args.c ) {
+         return;
+       }
+       $('input.col').val(args.c);
+       $('input.jsonp').val(args.h);
+       var sp = args.c.split('\.');
+       var db  = sp.shift();
+       var col = sp.join('\.');
+
+       view(99
+            ,''+args.h+'/'+db+'/'+col+'.cluster/'
+            ,''+args.h+'/'+db+'/'+col+'.data/'
+            );
+
+       var xaxis = {
+         dim: '',
+         tickFormatter:function(v,o){ return v.toFixed(0); },
+         tickDecimals:1,
+         reserveSpace:true,
+         labelWidth :30,
+         alignTicksWithAxis: 1
+       };
+       var yaxis = {
+         dim: '',
+         tickFormatter:function(v,o){ return v.toFixed(0); },
+         tickDecimals:1,
+         reserveSpace:true,
+         labelWidth :30,
+         alignTicksWithAxis: 1
+       };
+       function plot(target,data,colors){
+         $.plot(target, data, {
+	         series: {
+             lines: { show: false },
+             points: { show:true, radius:2,lineWidth:0 }
+	         },
+	         grid: { hoverable: true, clickable: true },
+	         xaxis: xaxis,
+	         yaxis: yaxis,
+	         selection: { mode: "x" },
+	         legend:{
+	           show: false,
+	           noColumns: 2,
+	           backgroundOpacity: 0.1
+	         },
+	         colors: colors
+         });
+         $(target).bind("plothover", function (event, pos, item) {
+	         if (item) {
+             $('#dgraphtt').remove();
+             $('<div id="dgraphtt">' + item.series.idx[item.dataIndex] + '(' + item.series.label + ')'+' </div>').css( {
+	             position: 'absolute',
+	             display: 'none',
+	             top: item.pageY + 5,
+	             left: item.pageX + 5,
+	             border: '1px solid #fdd',
+	             padding: '2px',
+	             'background-color': '#fee',
+	             opacity: 0.80
+             }).appendTo("body").fadeIn(200);
+	           return;
+	         }
+           $('#dgraphtt').remove();
+         });
+       }
+     });
+     -->
+    </script>
+  </body>
+</html>
