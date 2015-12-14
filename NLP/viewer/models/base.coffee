@@ -1,11 +1,12 @@
 _ = require 'underscore'
 Mongo = require 'mongo'
 
+# TODO: how to give this
 config = require 'settings'
 mongoConfig =
   host: config.mongo.hosts[0].split(':')[0]
   port: config.mongo.hosts[0].split(':')[1]
-  collection: config.mongo.basedb
+  database: config.mongo.basedb
   authdbname: config.mongo.auth?.db
   user: config.mongo.auth?.user
   password: config.mongo.auth?.password
