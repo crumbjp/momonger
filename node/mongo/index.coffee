@@ -53,6 +53,7 @@ class Mongo
 
   init: (done)->
     return @getmeta done if @db().opened
+    # TODO: async.doUntil
     interval = setInterval ()=>
       if @db().opened
         clearInterval interval
