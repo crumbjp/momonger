@@ -2,6 +2,9 @@ mongodb = require 'mongodb'
 
 dbByKey = {}
 class Mongo
+  @ObjectId: (id)->
+    mongodb.ObjectId id
+
   @term: (key)->
     db = dbByKey[key]
     dbByKey[key] = null

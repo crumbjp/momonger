@@ -1,0 +1,4 @@
+--reporter  spec
+--timeout   5000
+--compilers coffee:coffee-script/register
+--require ./test/global.coffee

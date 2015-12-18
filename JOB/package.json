@@ -1,0 +1,28 @@
+{
+  "name": "momonger-core",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^1.5.0",
+    "mongodb": "^2.1.1",
+    "opts": "^1.2.2",
+    "underscore": "^1.8.3"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "chai": "3.4.1",
+    "coffee-coverage": "0.7.0",
+    "mocha": "2.3.4"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test NODE_PATH=src mocha"
+  }
+}
