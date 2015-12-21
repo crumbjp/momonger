@@ -1,16 +1,16 @@
 'use strict'
+jobcontrol_test = require './_jobcontrol'
 
-describe 'local run', ->
-  before ->
-    @options =
-      runLocal: true
-    @config =
-      host        : "localhost"
-      port        : 27017
-      authdbname  : null
-      user        : null
-      password    : null
-      database    : "momongertest"
-      collection  : "job"
+context 'local', ->
+  options =
+    runLocal: true
+  config =
+    host        : "localhost"
+    port        : 27017
+    authdbname  : null
+    user        : null
+    password    : null
+    database    : "momongertest"
+    collection  : "job"
 
-  require './run_job'
+  jobcontrol_test.test options, config

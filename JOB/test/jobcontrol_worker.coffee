@@ -2,25 +2,23 @@
 Mongo = require 'mongo'
 Worker = require 'worker'
 
-describe 'worker run', ->
-  before (done)->
-    @options =
-      runLocal: false
+jobcontrol_test = require './_jobcontrol'
 
-    @config =
-      host        : "localhost"
-      port        : 27017
-      authdbname  : null
-      user        : null
-      password    : null
-      database    : "momongertest"
-      collection  : "job"
-    job = Mongo.getByNS @config, 'momongertest.job'
-    job.drop =>
-      Worker.start(@config)
-      Worker.start(@config)
-      Worker.start(@config)
-      done null
+context 'worker', ->
+  options =
+    runLocal: false
 
-
-  require './run_job'
+  config =
+    host        : "localhost"
+    port        : 27017
+    authdbname  : null
+    user        : null
+    password    : null
+    database    : "momongertest"
+    collection  : "job"
+  job = Mongo.getByNS config, 'momongertest.job'
+  job.drop =>
+    Worker.start(config)
+    Worker.start(config)
+    Worker.start(config)
+  jobcontrol_test.test options, config
