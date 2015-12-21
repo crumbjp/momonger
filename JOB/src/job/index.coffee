@@ -82,8 +82,8 @@ class Mapper extends Job
   map: (data, done)->
     done 'Not implemented'
 
-  reduce: (id, array, done)->
-    done 'Not implemented'
+  # reduce: (id, array, done)->
+  #   done 'Not implemented'
 
   beforeRun: (done)->
     done null
@@ -130,8 +130,10 @@ class Mapper extends Job
             ids: []
         ]
         emitIdById[typeVal][1].$pushAll.ids.push emitData._id
-      @emitMongo.bulkInsert emitDatas, done
-      @emitidsMongo.bulkUpdate _.values emitIdById, done
+      async.parallel [
+        (done) => @emitMongo.bulkInsert emitDatas, done
+        (done) => @emitidsMongo.bulkUpdate _.values(emitIdById), done
+      ], done
     else if @options.reduce
       results = []
       for result in _.values(@emitDataById)
@@ -172,6 +174,10 @@ class MapJob extends Job
     console.log 'map::afterLastMap'
     done null
 
+  afterRun: (done)->
+    console.log 'map::afterRun'
+    done null
+
   cursor: ->
     return @srcMongo.find(@options.query)
 
@@ -179,6 +185,7 @@ class MapJob extends Job
     throw 'Should retern Mapper job'
 
   _run: (done)->
+    doReduce = !!@mapper().prototype.reduce
     async.series {
       prepare:
         (done)=> @_prepare done
@@ -191,11 +198,13 @@ class MapJob extends Job
       afterLastMap:
         (done)=> @afterLastMap done
       reducers:
-        (done)=> @_reducers done
-      afterReduce:
-        (done)=> @afterReduce done
+        (done)=>
+          return done null unless doReduce
+          @_reducers done
+      afterRun:
+        (done)=> @afterRun done
     }, (err, results) =>
-      done err, results?.afterReduce
+      done err, results?.afterRun
 
   _createMapper: (ids, done)->
     options = _.extend {}, @options, {

@@ -73,6 +73,23 @@ it 'MapJob class', (done)->
     mapper: ->
       class MyMapper extends Mapper
         map: (value, done)=>
+          @dstMongo.insert value
+          setTimeout done, 1000
+
+    afterRun: (done)->
+      @dstMongo.find().count (err, count)=>
+        done null, "MyMapJob::afterRun:#{count}"
+
+  @jobControl.put MyMapJob, @options, (err, jobid)=>
+    @jobControl.wait jobid, (err, result)->
+      expect(result).to.equal 'MyMapJob::afterRun:10'
+      done null
+
+it 'MapReduceJob class', (done)->
+  class MyMapReduceJob extends MapJob
+    mapper: ->
+      class MyMapper extends Mapper
+        map: (value, done)=>
           @emit value.key, (value.val * @options.ALPHA)
           setTimeout done, 1000
         reduce: (id, values, done)=>
@@ -105,16 +122,16 @@ it 'MapJob class', (done)->
             done null
       ], done
 
-    afterReduce: (done)->
+    afterRun: (done)->
       @dstMongo.find().toArray (err, result)=>
         resultById = _.indexBy result, 'id'
         expect(resultById[1].value).to.equal 2
         expect(resultById[2].value).to.equal 8
         expect(resultById[3].value).to.equal 18
         expect(resultById['4'].value).to.equal 32
-        done null, 'MyMapJob::afterReduce'
+        done null, 'MyMapReduceJob::afterRun'
 
-  @jobControl.put MyMapJob, @options, (err, jobid)=>
+  @jobControl.put MyMapReduceJob, @options, (err, jobid)=>
     @jobControl.wait jobid, (err, result)->
-      expect(result).to.equal 'MyMapJob::afterReduce'
+      expect(result).to.equal 'MyMapReduceJob::afterRun'
       done null
