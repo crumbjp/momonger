@@ -1,6 +1,28 @@
 'use strict'
 _ = require 'underscore'
 
+DEFAULT_PROPERTIES = [
+  '__defineGetter__'
+  '__defineSetter__'
+  '__lookupGetter__'
+  '__lookupSetter__'
+  'constructor'
+  'hasOwnProperty'
+  'isPrototypeOf'
+  'propertyIsEnumerable'
+  'toLocaleString'
+  'toString'
+  'valueOf'
+  'apply'
+  'arguments'
+  'bind'
+  'call'
+  'caller'
+  'length'
+  'name'
+  '__super__'
+  'prototype'
+]
 class Js2String
   constructor: (@js)->
     @random = Math.random() * 10000000000000000000
@@ -11,7 +33,10 @@ class Js2String
   convert: ->
     src = @js2String @js
     if _.isFunction(@js) and @js.name
-      "#{@strObjects}\n#{src}"
+      coffee = 'var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },\n'
+      coffee += 'hasProp = {}.hasOwnProperty,\n'
+      coffee += 'bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };\n'
+      "#{coffee}#{@strObjects}\n#{src}"
     else
       "function(){#{@strObjects}\nreturn #{src}}()"
 
@@ -71,11 +96,12 @@ class Js2String
       body += "#{js.name}.__super__.constructor = #{@function2String js.__super__.constructor.name}\n"
     # TODO: How to treat nameless function's prototype ? Impossible maybe..
     if js.name
+      for field, value of js
+        continue if field in DEFAULT_PROPERTIES
+        body += "#{js.name}['#{field}'] = #{@js2String value}\n"
       for field, value of js.prototype
         body += "#{js.name}.prototype['#{field}'] = #{@js2String value}\n"
     body
-
-
 
 module.exports = (js)->
   js2string = new Js2String js

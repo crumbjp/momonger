@@ -1,9 +1,9 @@
 #!/usr/bin/env coffee
 'use strict'
-
+{toTypeValue, encodeToString, decodeFromString} = require 'common'
 async = require 'async'
 _ = require 'underscore'
-job = require 'job'
+{Job, MapJob, Mapper} = require 'job'
 Mongo = require 'mongo'
 js2String = require 'js2string'
 
@@ -21,11 +21,11 @@ class JobControl
     implData =
       name: name
       jobImpl: js2String jobImpl
-      options: js2String options
+      options: encodeToString options
       status: 'put'
-      processTimestamp: null
+      createdAt: new Date()
       _id: Mongo.ObjectId()
-    @jobImpl.col().insert implData, (err, result)->
+    @jobImpl.insert implData, (err, result)->
       done err, implData._id
 
   put: (jobImpl, options, done)->
@@ -40,9 +40,8 @@ class JobControl
     if options.runLocal
       _id = Mongo.ObjectId().toString()
       if name
-        JobClass = null
-        # eval "JobClass = #{name}"
-        @_runJobClass jobImpl, options, (err, result)=>
+        r = Math.random()
+        @_runJobClass jobImpl, _id, options, (err, result)=>
           @localJobById[_id] = {
             err,
             result
@@ -66,7 +65,7 @@ class JobControl
     finish = false
     job = null
     async.doDuring (done)=>
-      @jobImpl.col().findOne
+      @jobImpl.findOne
         _id: jobid
         status:
           $in: ['done', 'error']
@@ -83,14 +82,14 @@ class JobControl
         done null, true
       , 1000
     , (err)->
-      console.log '----', err, jobid, job
       done err, job?.result
 
   get: (done)->
-    @jobImpl.col().findAndModify
-      processTimestamp: null
+    @jobImpl.findAndModify
+      status:
+        $in: ['put', 'map']
     ,
-      {}
+      createdAt: 1
     ,
       $set:
         processTimestamp: new Date()
@@ -101,43 +100,67 @@ class JobControl
     , (err, result)->
       done err, result?.value
 
-  release: (status, implData, result)->
-    @jobImpl.col().update
-      _id: implData._id
+  # getJobLock: (jobid, lockName, done) ->
+  #   if @localJobById[jobid]
+  #     if @localJobById[jobid][lockName]
+  #       return done null, null
+  #     else
+  #       @localJobById[jobid][lockName] = 1
+  #       return done null, {_id: jobid}
+
+  #   query =
+  #     _id: jobid
+  #   query[lockName] = null
+
+  #   set = {}
+  #   set[lockName] = 1
+
+  #   @jobImpl.col().findAndModify query,
+  #     {}
+  #   ,
+  #     $set: set
+  #   ,
+  #     upsert: false
+  #     new: false
+  #     fields: ['_id']
+  #   , (err, result)->
+  #     done err, result.value
+
+  updateStatus: (jobid, status, result)->
+    @jobImpl.update
+      _id: jobid
     ,
       $set:
         status: status
         result: result
 
-  _runJobClass: (JobClass, options, done)->
-    job = new JobClass @config, options
-    job.run done
+  _runJobClass: (JobClass, jobid, options, done)->
+    job = new JobClass this, jobid, @config, options
+    job._run done
 
   _runJobImpl: (jobImpl, options, done)->
     jobImpl @config, options, done
 
   run: (implData, done)->
     jobImpl = options = null
-    eval "options = #{implData.options}"
+    options = decodeFromString implData.options
     if implData.name
       JobClass = null
       eval "#{implData.jobImpl}\nJobClass = #{implData.name}"
-      @_runJobClass JobClass, options, (err, result)=>
+      @_runJobClass JobClass, implData._id, options, (err, result)=>
         if err
-          @release 'error', implData, result
+          @updateStatus implData._id, 'error', result
         else
-          @release 'done', implData, result
-        console.log '*****', implData._id, result
+          @updateStatus implData._id, 'done', result
         done err, result
 
     else
       eval "jobImpl = #{implData.jobImpl}"
       @_runJobImpl jobImpl, options, (err, result)=>
         if err
-          @release 'error', implData, result
+          @updateStatus implData._id, 'error', result
         else
-          @release 'done', implData, result
-        console.log '*****', implData._id, result
+          @updateStatus implData._id, 'done', result
         done err, result
 
 module.exports = JobControl
