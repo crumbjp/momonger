@@ -1,0 +1,31 @@
+{
+  "name": "momonger",
+  "version": "0.0.1",
+  "description": "WIP version",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "hiroaki.kubota@mail.crumb.jp",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^1.5.0",
+    "mongodb": "^2.1.1",
+    "opts": "^1.2.2",
+    "sift": "^3.0.0",
+    "underscore": "^1.8.3"
+  },
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/crumbjp/momonger.git"
+  },
+  "devDependencies": {
+    "chai": "3.4.1",
+    "coffee-coverage": "0.7.0",
+    "mocha": "2.3.4"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test NODE_PATH=src mocha"
+  }
+}
