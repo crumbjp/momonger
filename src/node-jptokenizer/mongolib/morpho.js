@@ -1,1 +1,1 @@
-../../../NLP/tokenize/lib/morpho.js
+../../../monmo/NLP/tokenize/lib/morpho.js
