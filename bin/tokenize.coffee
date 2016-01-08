@@ -64,4 +64,7 @@ async.series [
     done err
   (done) => jobControl.wait jobid, done
 ], (err, results)=>
-  console.log err, results
+  if err
+    console.error err
+    process.exit 1
+  process.exit 0
