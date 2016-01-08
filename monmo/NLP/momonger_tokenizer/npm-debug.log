@@ -1,0 +1,202 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'install' ]
+2 info using npm@2.3.0
+3 info using node@v0.10.35
+4 verbose node symlink /usr/local/bin/node
+5 warn package.json momonger_tokenizer@0.0.1 No description
+6 warn package.json momonger_tokenizer@0.0.1 No repository field.
+7 warn package.json momonger_tokenizer@0.0.1 No README data
+8 verbose install where, deps [ '/Users/crumbjp/git/momonger/NLP/momonger_tokenizer',
+8 verbose install   [ 'async',
+8 verbose install     'mongodb',
+8 verbose install     'underscore',
+8 verbose install     'chai',
+8 verbose install     'coffee-coverage',
+8 verbose install     'mocha',
+8 verbose install     'node-jptokenizer',
+8 verbose install     'momonger-core' ] ]
+9 verbose install where, peers [ '/Users/crumbjp/git/momonger/NLP/momonger_tokenizer', [] ]
+10 info preinstall momonger_tokenizer@0.0.1
+11 verbose already installed skipping async@^1.5.0 /Users/crumbjp/git/momonger/NLP/momonger_tokenizer
+12 verbose already installed skipping mongodb@^2.0.52 /Users/crumbjp/git/momonger/NLP/momonger_tokenizer
+13 verbose already installed skipping underscore@^1.8.3 /Users/crumbjp/git/momonger/NLP/momonger_tokenizer
+14 silly cache add args [ 'chai@3.4.1', null ]
+15 verbose cache add spec chai@3.4.1
+16 silly cache add parsed spec { raw: 'chai@3.4.1',
+16 silly cache add   scope: null,
+16 silly cache add   name: 'chai',
+16 silly cache add   rawSpec: '3.4.1',
+16 silly cache add   spec: '3.4.1',
+16 silly cache add   type: 'version' }
+17 verbose addNamed chai@3.4.1
+18 silly addNamed semver.valid 3.4.1
+19 silly addNamed semver.validRange 3.4.1
+20 silly mapToRegistry name chai
+21 silly mapToRegistry using default registry
+22 silly mapToRegistry registry https://registry.npmjs.org/
+23 silly mapToRegistry uri https://registry.npmjs.org/chai
+24 verbose addNameVersion registry:https://registry.npmjs.org/chai not in flight; fetching
+25 silly cache add args [ 'coffee-coverage@0.7.0', null ]
+26 verbose cache add spec coffee-coverage@0.7.0
+27 silly cache add parsed spec { raw: 'coffee-coverage@0.7.0',
+27 silly cache add   scope: null,
+27 silly cache add   name: 'coffee-coverage',
+27 silly cache add   rawSpec: '0.7.0',
+27 silly cache add   spec: '0.7.0',
+27 silly cache add   type: 'version' }
+28 verbose addNamed coffee-coverage@0.7.0
+29 silly addNamed semver.valid 0.7.0
+30 silly addNamed semver.validRange 0.7.0
+31 silly mapToRegistry name coffee-coverage
+32 silly mapToRegistry using default registry
+33 silly mapToRegistry registry https://registry.npmjs.org/
+34 silly mapToRegistry uri https://registry.npmjs.org/coffee-coverage
+35 verbose addNameVersion registry:https://registry.npmjs.org/coffee-coverage not in flight; fetching
+36 silly cache add args [ 'mocha@2.3.4', null ]
+37 verbose cache add spec mocha@2.3.4
+38 silly cache add parsed spec { raw: 'mocha@2.3.4',
+38 silly cache add   scope: null,
+38 silly cache add   name: 'mocha',
+38 silly cache add   rawSpec: '2.3.4',
+38 silly cache add   spec: '2.3.4',
+38 silly cache add   type: 'version' }
+39 verbose addNamed mocha@2.3.4
+40 silly addNamed semver.valid 2.3.4
+41 silly addNamed semver.validRange 2.3.4
+42 silly mapToRegistry name mocha
+43 silly mapToRegistry using default registry
+44 silly mapToRegistry registry https://registry.npmjs.org/
+45 silly mapToRegistry uri https://registry.npmjs.org/mocha
+46 verbose addNameVersion registry:https://registry.npmjs.org/mocha not in flight; fetching
+47 silly cache add args [ 'node-jptokenizer@file:../node_jptokenizer/src', null ]
+48 verbose cache add spec node-jptokenizer@file:../node_jptokenizer/src
+49 silly cache add args [ 'momonger-core@file:../../JOB//src', null ]
+50 verbose cache add spec momonger-core@file:../../JOB//src
+51 silly cache add parsed spec { raw: 'node-jptokenizer@file:../node_jptokenizer/src',
+51 silly cache add   scope: null,
+51 silly cache add   name: 'node-jptokenizer',
+51 silly cache add   rawSpec: 'file:../node_jptokenizer/src',
+51 silly cache add   spec: '/Users/crumbjp/git/momonger/NLP/node_jptokenizer/src',
+51 silly cache add   type: 'local' }
+52 silly cache add parsed spec { raw: 'momonger-core@file:../../JOB//src',
+52 silly cache add   scope: null,
+52 silly cache add   name: 'momonger-core',
+52 silly cache add   rawSpec: 'file:../../JOB//src',
+52 silly cache add   spec: '/Users/crumbjp/git/momonger/JOB/src',
+52 silly cache add   type: 'local' }
+53 error addLocal Could not install /Users/crumbjp/git/momonger/NLP/node_jptokenizer/src
+54 error addLocal Could not install /Users/crumbjp/git/momonger/JOB/src
+55 verbose request uri https://registry.npmjs.org/chai
+56 verbose request no auth needed
+57 info attempt registry request try #1 at 18:01:43
+58 verbose request using bearer token for auth
+59 verbose request id b60a38273db4654c
+60 verbose etag "6NLRJT2FUQUU1ZH6J1PBDN9JK"
+61 http request GET https://registry.npmjs.org/chai
+62 verbose request uri https://registry.npmjs.org/coffee-coverage
+63 verbose request no auth needed
+64 info attempt registry request try #1 at 18:01:43
+65 verbose request using bearer token for auth
+66 verbose etag "8YA4HMNVAMWABS5ESJ6GY2FTM"
+67 http request GET https://registry.npmjs.org/coffee-coverage
+68 verbose request uri https://registry.npmjs.org/mocha
+69 verbose request no auth needed
+70 info attempt registry request try #1 at 18:01:43
+71 verbose request using bearer token for auth
+72 verbose etag "90VVDGH6U3QLSGZHZKAG87LGR"
+73 http request GET https://registry.npmjs.org/mocha
+74 http 304 https://registry.npmjs.org/coffee-coverage
+75 silly get cb [ 304,
+75 silly get   { 'cache-control': 'max-age=300',
+75 silly get     'accept-ranges': 'bytes',
+75 silly get     date: 'Mon, 21 Dec 2015 09:01:44 GMT',
+75 silly get     via: '1.1 varnish',
+75 silly get     connection: 'keep-alive',
+75 silly get     'x-served-by': 'cache-itm7420-ITM',
+75 silly get     'x-cache': 'MISS',
+75 silly get     'x-cache-hits': '0',
+75 silly get     'x-timer': 'S1450688504.244600,VS0,VE159' } ]
+76 verbose etag https://registry.npmjs.org/coffee-coverage from cache
+77 silly cache afterAdd coffee-coverage@0.7.0
+78 verbose afterAdd /Users/crumbjp/.npm/coffee-coverage/0.7.0/package/package.json not in flight; writing
+79 verbose afterAdd /Users/crumbjp/.npm/coffee-coverage/0.7.0/package/package.json written
+80 http 200 https://registry.npmjs.org/chai
+81 silly get cb [ 200,
+81 silly get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+81 silly get     etag: '"EOTBE4FJ62XNM2VTENYL26UDM"',
+81 silly get     'content-type': 'application/json',
+81 silly get     'cache-control': 'max-age=300',
+81 silly get     'content-length': '84292',
+81 silly get     'accept-ranges': 'bytes',
+81 silly get     date: 'Mon, 21 Dec 2015 09:01:45 GMT',
+81 silly get     via: '1.1 varnish',
+81 silly get     connection: 'keep-alive',
+81 silly get     'x-served-by': 'cache-itm7427-ITM',
+81 silly get     'x-cache': 'MISS',
+81 silly get     'x-cache-hits': '0',
+81 silly get     'x-timer': 'S1450688504.230626,VS0,VE960',
+81 silly get     vary: 'Accept' } ]
+82 silly mapToRegistry name chai
+83 silly mapToRegistry using default registry
+84 silly mapToRegistry registry https://registry.npmjs.org/
+85 silly mapToRegistry uri https://registry.npmjs.org/chai
+86 verbose addRemoteTarball https://registry.npmjs.org/chai/-/chai-3.4.1.tgz not in flight; adding
+87 verbose addRemoteTarball [ 'https://registry.npmjs.org/chai/-/chai-3.4.1.tgz',
+87 verbose addRemoteTarball   '330ae2f819124c26182036fa5e43a88ea4e1bd85' ]
+88 info retry fetch attempt 1 at 18:01:44
+89 info attempt registry request try #1 at 18:01:44
+90 http fetch GET https://registry.npmjs.org/chai/-/chai-3.4.1.tgz
+91 verbose request using bearer token for auth
+92 http 200 https://registry.npmjs.org/mocha
+93 silly get cb [ 200,
+93 silly get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+93 silly get     etag: '"F1O7UVQ25DDMI1OEE93K0NTEV"',
+93 silly get     'content-type': 'application/json',
+93 silly get     'cache-control': 'max-age=300',
+93 silly get     'content-length': '204369',
+93 silly get     'accept-ranges': 'bytes',
+93 silly get     date: 'Mon, 21 Dec 2015 09:01:45 GMT',
+93 silly get     via: '1.1 varnish',
+93 silly get     connection: 'keep-alive',
+93 silly get     'x-served-by': 'cache-itm7421-ITM',
+93 silly get     'x-cache': 'MISS',
+93 silly get     'x-cache-hits': '0',
+93 silly get     'x-timer': 'S1450688504.227332,VS0,VE928',
+93 silly get     vary: 'Accept' } ]
+94 silly mapToRegistry name mocha
+95 silly mapToRegistry using default registry
+96 silly mapToRegistry registry https://registry.npmjs.org/
+97 silly mapToRegistry uri https://registry.npmjs.org/mocha
+98 verbose addRemoteTarball https://registry.npmjs.org/mocha/-/mocha-2.3.4.tgz not in flight; adding
+99 verbose addRemoteTarball [ 'https://registry.npmjs.org/mocha/-/mocha-2.3.4.tgz',
+99 verbose addRemoteTarball   '8629a6fb044f2d225aa4b81a2ae2d001699eb266' ]
+100 info retry fetch attempt 1 at 18:01:44
+101 info attempt registry request try #1 at 18:01:44
+102 http fetch GET https://registry.npmjs.org/mocha/-/mocha-2.3.4.tgz
+103 verbose request using bearer token for auth
+104 http fetch 200 https://registry.npmjs.org/chai/-/chai-3.4.1.tgz
+105 http fetch 200 https://registry.npmjs.org/mocha/-/mocha-2.3.4.tgz
+106 silly fetchAndShaCheck shasum 330ae2f819124c26182036fa5e43a88ea4e1bd85
+107 verbose addTmpTarball /var/folders/8x/m68vpw21645bqvcyk80qxh100000gn/T/npm-96325-c7fb4bc3/registry.npmjs.org/chai/-/chai-3.4.1.tgz not in flight; adding
+108 verbose addTmpTarball already have metadata; skipping unpack for chai@3.4.1
+109 silly cache afterAdd chai@3.4.1
+110 verbose afterAdd /Users/crumbjp/.npm/chai/3.4.1/package/package.json not in flight; writing
+111 verbose afterAdd /Users/crumbjp/.npm/chai/3.4.1/package/package.json written
+112 silly fetchAndShaCheck shasum 8629a6fb044f2d225aa4b81a2ae2d001699eb266
+113 verbose addTmpTarball /var/folders/8x/m68vpw21645bqvcyk80qxh100000gn/T/npm-96325-c7fb4bc3/registry.npmjs.org/mocha/-/mocha-2.3.4.tgz not in flight; adding
+114 verbose addTmpTarball already have metadata; skipping unpack for mocha@2.3.4
+115 silly cache afterAdd mocha@2.3.4
+116 verbose afterAdd /Users/crumbjp/.npm/mocha/2.3.4/package/package.json not in flight; writing
+117 verbose afterAdd /Users/crumbjp/.npm/mocha/2.3.4/package/package.json written
+118 verbose stack Error: EISDIR, read
+119 verbose cwd /Users/crumbjp/git/momonger/NLP/momonger_tokenizer
+120 error Darwin 13.4.0
+121 error argv "node" "/usr/local/bin/npm" "install"
+122 error node v0.10.35
+123 error npm  v2.3.0
+124 error code EISDIR
+125 error errno 28
+126 error EISDIR, read
+127 error If you need help, you may report this error at:
+127 error     <http://github.com/npm/npm/issues>
+128 verbose exit [ 28, true ]
