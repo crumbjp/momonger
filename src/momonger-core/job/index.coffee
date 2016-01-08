@@ -159,7 +159,6 @@ class Mapper extends Job
     else
       done 'Unknown map OP'
 
-
   _run: (done)->
     async.series [
       (done)=> @_prepare done
@@ -180,6 +179,10 @@ class MapJob extends Job
       chunkSize: 1000
       query: {}
     }, @options
+    @options.query = _.extend {
+      _id:
+        $ne: '.meta'
+    }, @options.query
     @options.emit ||= "#{@options.dst}.emit"
     @options.emitids ||= "#{@options.emit}.ids"
 
@@ -258,18 +261,23 @@ class MapJob extends Job
 
   _reducers: (done)->
     @jobids = []
+    chunkSize = 1
     async.series [
       (done) =>
-        # TODO: 1 @jobids
-        Mongo.inBatch @emitidsMongo.find(), 1,
+        @emitidsMongo.count (err, result)->
+          chunkSize = Math.floor(result / 100) + 1
+          done null
+      (done) =>
+        Mongo.inBatch @emitidsMongo.find(), chunkSize,
           (data)-> data.ids
         ,
           (idsArr, done)=>
-            async.each idsArr, (ids, done) =>
-              @_createReducer ids, (err, jobid)=>
-                @jobids.push jobid
-                done null
-            , done
+            reduceIds = []
+            for ids in idsArr
+              reduceIds = reduceIds.concat ids
+            @_createReducer reduceIds, (err, jobid)=>
+              @jobids.push jobid
+              done null
         , done
       (done) =>
         async.each @jobids, (jobid, done) =>
