@@ -4,7 +4,7 @@ async = require 'async'
 
 {momonger, dictionary} = Config.load 'config/test.conf'
 
-describe 'tf', ->
+describe 'TF job', ->
   before ->
     @options =
       runLocal: true

@@ -15,6 +15,12 @@ opts.parse [
   value       : true
   required    : false
 ,
+  short       : 'a'
+  long        : 'append'
+  description : 'append mode'
+  value       : true
+  required    : false
+,
   short       : 'c'
   long        : 'config'
   description : 'configPath'
@@ -23,30 +29,39 @@ opts.parse [
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.token"
+append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 
 async   = require 'async'
 {Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{Df} = require 'momonger-vectorize'
-
-options = {
-  runLocal: false
-  src
-  dst
-}
+{Tfidf} = require 'momonger-vectorize'
 
 momonger = Config.load configPath
 
-jobControl = new JobControl momonger
-jobid = null
-async.series [
-  (done) => jobControl.init done
-  (done) => jobControl.put Df, options, (err, result)->
-    jobid = result
-    done err
-  (done) => jobControl.wait jobid, done
-], (err, results)=>
+src = Mongo.getByNS momonger, src
+src.findOne {_id: '.meta'}, (err, meta)->
   if err
     console.error err
     process.exit 1
-  process.exit 0
+
+  options = {
+    runLocal: false
+    src: meta.tf
+    idf: meta.idf
+    dst
+    append
+  }
+
+  jobControl = new JobControl momonger
+  jobid = null
+  async.series [
+    (done) => jobControl.init done
+    (done) => jobControl.put Tfidf, options, (err, result)->
+      jobid = result
+      done err
+    (done) => jobControl.wait jobid, done
+  ], (err, results)=>
+    if err
+      console.error err
+      process.exit 1
+    process.exit 0

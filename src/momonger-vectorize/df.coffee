@@ -9,7 +9,7 @@ class Df extends MapJob
       done err
 
   mapper: ->
-    class TfMapper extends Mapper
+    class DfMapper extends Mapper
       map: (doc, done)=>
         for word in doc.words
           @emit word.w, 1
@@ -25,10 +25,11 @@ class Df extends MapJob
         {
           _id: value.id
           value: value.value
+          a: @options.append
         }
 
   afterLastMap: (done)->
-    @meta.df = @options.df
+    @meta.df = @options.dst
     @dstMongo.insert @meta, done
 
 module.exports = Df

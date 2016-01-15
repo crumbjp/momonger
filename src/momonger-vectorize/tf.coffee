@@ -4,6 +4,12 @@ async = require 'async'
 {Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
 
 class Tf extends MapJob
+  constructor: (@jobcontrol, @jobid, @config, @options)->
+    super @jobcontrol, @jobid, @config, @options
+    if @options.append
+      @options.appendDst = true
+      @options.query.a = @options.append
+
   beforeFirstMap: (done)->
     @srcMongo.getmeta (err, @meta)=>
       done err
@@ -27,13 +33,20 @@ class Tf extends MapJob
         done null, _.values wordCountByWord
 
       lastFormat: (value)=>
-        {
+        [
           _id: value.id
+        ,
           words: value.value
-        }
+          a: @options.append
+        ]
 
   afterLastMap: (done)->
+    return done null if @options.append?
     @meta.tf = @options.dst
-    @dstMongo.insert @meta, done
+    async.parallel [
+      (done) => @dstMongo.insert @meta, done
+      (done) => @dstMongo.createIndex {a: 1}, done
+    ], (err) =>
+      done err, @meta
 
 module.exports = Tf

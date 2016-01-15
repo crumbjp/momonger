@@ -18,7 +18,7 @@ opts.parse [
   short       : 'a'
   long        : 'append'
   description : 'append mode'
-  value       : false
+  value       : true
   required    : false
 ,
   short       : 'c'
@@ -29,7 +29,7 @@ opts.parse [
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.token"
-append = opts.get('append') || false
+append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 
 async   = require 'async'

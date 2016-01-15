@@ -20,19 +20,43 @@ opts.parse [
   description : 'configPath'
   value       : true
   required    : false
+,
+  short       : 'n'
+  long        : 'noun-only'
+  description : 'configPath'
+  value       : false
+  required    : false
+,
+  short       : 'u'
+  long        : 'use-dictionary-coefficient'
+  description : 'configPath'
+  value       : false
+  required    : false
+,
+  short       : 'f'
+  long        : 'filter-noise'
+  description : 'configPath'
+  value       : false
+  required    : false
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.token"
 configPath = opts.get('config') || 'config/momonger.conf'
+noun = opts.get 'noun-only'
+useDictionaryCoefficient = opts.get 'use-dictionary-coefficient'
+filterNoise = opts.get 'filter-noise'
 
 async   = require 'async'
 {Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{Df} = require 'momonger-vectorize'
+{Idf} = require 'momonger-vectorize'
 
 options = {
   runLocal: false
   src
   dst
+  noun
+  useDictionaryCoefficient
+  filterNoise
 }
 
 momonger = Config.load configPath
@@ -41,7 +65,7 @@ jobControl = new JobControl momonger
 jobid = null
 async.series [
   (done) => jobControl.init done
-  (done) => jobControl.put Df, options, (err, result)->
+  (done) => jobControl.put Idf, options, (err, result)->
     jobid = result
     done err
   (done) => jobControl.wait jobid, done
