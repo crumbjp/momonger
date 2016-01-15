@@ -126,27 +126,30 @@ class JobControl
   #   , (err, result)->
   #     done err, result.value
 
-  updateStatus: (jobid, status, result)->
+  updateStatus: (jobid, status, result, done)->
     @jobImpl.update
       _id: jobid
     ,
       $set:
         status: status
         result: result
+    , done
 
   _runJobClass: (JobClass, jobid, options, done)->
     job = new JobClass this, jobid, @config, options
     job._run (err, result)=>
+      result ||= {} # TODO: dirty...
       if err
         result.err = err
-        console.err err
+        console.error err
       done err, result
 
   _runJobImpl: (jobImpl, options, done)->
     jobImpl @config, options, (err, result)=>
+      result ||= {}
       if err
         result.err = err
-        console.err err
+        console.error err
       done err, result
 
   run: (implData, done)->
@@ -157,18 +160,20 @@ class JobControl
       eval "#{implData.jobImpl}\nJobClass = #{implData.name}"
       @_runJobClass JobClass, implData._id, options, (err, result)=>
         if err
-          @updateStatus implData._id, 'error', result
+          @updateStatus implData._id, 'error', result, (e)->
+            done err, result
         else
-          @updateStatus implData._id, 'done', result
-        done err, result
+          @updateStatus implData._id, 'done', result, (e)->
+            done e, result
 
     else
       eval "jobImpl = #{implData.jobImpl}"
       @_runJobImpl jobImpl, options, (err, result)=>
         if err
-          @updateStatus implData._id, 'error', result
+          @updateStatus implData._id, 'error', result, (e)->
+            done err, result
         else
-          @updateStatus implData._id, 'done', result
-        done err, result
+          @updateStatus implData._id, 'done', result, (e)->
+            done e, result
 
 module.exports = JobControl
