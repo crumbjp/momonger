@@ -59,6 +59,7 @@ class Mongo
     "#{@config.database}.#{@config.collection}"
 
   constructor: (@config)->
+    @initCallbacks = []
     @key = JSON.stringify {
       host: @config.host
       port: @config.port
@@ -78,11 +79,14 @@ class Mongo
 
   init: (done)->
     return done null, @_db() if @_db().opened
+    @initCallbacks.push done
     # TODO: async.doUntil
     @interval ||= setInterval ()=>
       if @_db().opened
         clearInterval @interval
-        done null, @_db()
+        for callback in @initCallbacks
+          callback null, @_db()
+        @initCallbacks = []
     , 100
 
   bulkInsert: (docs, done) ->
@@ -146,12 +150,16 @@ class Mongo
   drop: (args...)->
     @_col (err, col) ->
       col.drop args...
+  remove: (args...)->
+    @_col (err, col) ->
+      col.remove args...
 
   @inBatch: (cursor, batchSize, formatter, callback, done) ->
     # Silly event design... 'end' events will occur regardless of calling stream.pause()
     # So cannot use 'end'
     cursor.count (err, all) ->
       return done err if err
+      return done null unless all
       count = 0
       stream = cursor.stream()
       elements = []
