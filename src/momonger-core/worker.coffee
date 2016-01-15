@@ -3,13 +3,13 @@
 async = require 'async'
 JobControl = require './jobcontrol'
 
+finish = false
 exports.start = (config)->
   jobControl = new JobControl config
 
   jobControl.init ->
     id = Math.random()
     console.log 'Start worker', id
-    finish = false
     empty = false
     async.doDuring (done)->
       empty = false
@@ -33,3 +33,6 @@ exports.start = (config)->
     , (err)->
       console.log 'Finish worker', id, err
       jobControl.term()
+
+exports.finish = ->
+  finish = 'hup'

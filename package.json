@@ -4,12 +4,13 @@
   "description": "WIP version",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_ENV=test NODE_PATH=src mocha"
   },
   "author": "hiroaki.kubota@mail.crumb.jp",
   "license": "MIT",
   "dependencies": {
     "async": "^1.5.0",
+    "cluster": "^0.7.7",
     "mongodb": "^2.1.1",
     "opts": "^1.2.2",
     "sift": "^3.0.0",
@@ -24,8 +25,5 @@
     "chai": "3.4.1",
     "coffee-coverage": "0.7.0",
     "mocha": "2.3.4"
-  },
-  "scripts": {
-    "test": "NODE_ENV=test NODE_PATH=src mocha"
   }
 }
