@@ -5,6 +5,12 @@ async = require 'async'
 {Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
 
 class Tokenize extends MapJob
+  constructor: (@jobcontrol, @jobid, @config, @options)->
+    super @jobcontrol, @jobid, @config, @options
+    if @options.append
+      @options.appendDst = true
+      @options.query.a = @options.append
+
   mapper: ->
     class TokenizeMapper extends Mapper
       beforeRun: (done) =>
@@ -12,6 +18,8 @@ class Tokenize extends MapJob
         done null
 
       map: (doc, done)=>
+        @emit '.meta', 1 unless @options.append?
+
         jptokenizer = new @JPTokenizer @options.dictionary
         jptokenizer.modifier = (result, candidate, done)->
           return done null, null if '不明' in candidate.t
@@ -32,18 +40,38 @@ class Tokenize extends MapJob
                 c: token.c
                 a: @options.append
               }
-            @dstMongo.bulkInsert results, done
 
-  afterLastMap: (done)->
+            async.series [
+              (done) =>
+                return done null unless @options.append?
+                @dstMongo.remove {d: doc._id}, done
+              (done) => @dstMongo.bulkInsert results, done
+            ], done
+
+
+      reduce: (id, array, done)=>
+        ret = 0
+        for elem in array
+          ret += elem
+        done null, ret
+
+      lastFormat: (value)=>
+        {
+          _id: '.meta'
+          num: value.value
+        }
+
+  afterRun: (done)->
     JPTokenizer = require 'node-jptokenizer'
     jptokenizer = new JPTokenizer @options.dictionary
     meta =
-      src: @options.src
+      docs: @options.src
       token: @options.dst
       dictionary: @options.dictionary
     async.parallel [
-      (done) => @dstMongo.update {_id: '.meta'}, meta, {upsert: true}, done
       (done) => @dstMongo.createIndex {d: 1, i: 1}, done
+      (done) => @dstMongo.createIndex {a: 1}, done
+      (done) => @dstMongo.update {_id: '.meta'}, {$set: meta}, {upsert: false}, done
     ], (err) ->
       done err, meta
 

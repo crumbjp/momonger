@@ -18,7 +18,7 @@ opts.parse [
   short       : 'a'
   long        : 'append'
   description : 'append mode'
-  value       : false
+  value       : true
   required    : false
 ,
   short       : 'D'
@@ -35,7 +35,7 @@ opts.parse [
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.token"
-append = opts.get('append') || false
+append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 dictionaryPath = opts.get('dictionary') || 'config/dictionary.conf'
 
@@ -45,13 +45,13 @@ async   = require 'async'
 {Tokenize} = require 'momonger-tokenize'
 
 options = {
+  chunkSize: 10 # TODO: 100 or 1000 ?
   runLocal: false
   src
   dst
   dictionary: Config.load dictionaryPath
   append
 }
-console.log options
 
 momonger = Config.load configPath
 
@@ -62,7 +62,8 @@ async.series [
   (done) => jobControl.put Tokenize, options, (err, result)->
     jobid = result
     done err
-  (done) => jobControl.wait jobid, done
+  (done) =>
+    jobControl.wait jobid, done
 ], (err, results)=>
   if err
     console.error err
