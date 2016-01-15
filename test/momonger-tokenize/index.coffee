@@ -1,3 +1,5 @@
 describe 'momongoer-tokenize', ->
-  require './tokenize'
-  require './phrase'
+  describe 'tokenize', ->
+    require './tokenize'
+  describe 'phrase', ->
+    require './phrase'
