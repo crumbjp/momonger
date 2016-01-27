@@ -29,6 +29,8 @@ describe 'build data', ->
       (done) => importDocs 'test/fixture/sampledocs.json', srcMongo, done
     ], done
 
+  describe 'common', ->
+    require './common'
   describe 'node-jptokenizer', ->
     require './node-jptokenizer'
   describe 'momonger-core', ->

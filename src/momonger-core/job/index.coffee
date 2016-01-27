@@ -95,10 +95,10 @@ class Mapper extends Job
     done null
 
   _maps: (done) ->
-    @srcMongo.find
+    @srcMongo.findAsArray
       _id:
         $in: @ids
-    .toArray (err, elements)=>
+    , (err, elements)=>
       return done err if err
       if @options.map
         async.each elements, @map, done

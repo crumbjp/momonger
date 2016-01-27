@@ -132,6 +132,12 @@ class Mongo
   find: (args...)->
     @_col (err, col) ->
       col.find args...
+  findAsArray: (args...)->
+    callback = args.pop()
+    args.push (err, cursor)->
+      return done err if err
+      cursor.toArray callback
+    @find.apply @, args
   findOne: (args...)->
     @_col (err, col) ->
       col.findOne args...
@@ -153,6 +159,12 @@ class Mongo
   remove: (args...)->
     @_col (err, col) ->
       col.remove args...
+  aggregate: (args...)->
+    @_col (err, col) ->
+      col.aggregate args...
+  rename: (args...)->
+    @_col (err, col) ->
+      col.rename args...
 
   @inBatch: (cursor, batchSize, formatter, callback, done) ->
     # Silly event design... 'end' events will occur regardless of calling stream.pause()

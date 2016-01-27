@@ -77,3 +77,54 @@ exports.decodeFromString = decodeFromString = (str, returnIndex)->
     [ret, pos]
   else
     ret
+
+exports.addVector = addVector = (vec1, vec2)->
+  ret = {}
+  for k, v of vec1
+    ret[k] = v
+  for k, v of vec2
+    if ret[k]?
+      ret[k] += v
+    else
+      ret[k] = v
+  ret
+
+exports.divVector = divVector = (vec1, div)->
+  ret = {}
+  for k, v of vec1
+    ret[k] = v / div
+  ret
+
+exports.multiVector = multiVector = (vec1, multi)->
+  ret = {}
+  for k, v of vec1
+    ret[k] = v * multi
+  ret
+
+exports.diffVector = diffVector = (vec1, vec2)->
+  pow2 = (v)->
+    v * v
+  dist = 0
+  for k, v of vec1
+    if vec2[k]
+      dist += pow2(v - vec2[k])
+    else
+      dist += pow2(v)
+  for k, v of vec2
+    unless vec1[k]
+      dist += pow2(v)
+  Math.sqrt dist
+
+exports.diffAngle = diffAngle = (vec1, vec2)->
+  dist = 0
+  for k, v of vec1
+    if vec2[k]
+      dist += v * vec2[k]
+  1 - dist
+
+exports.normalVector = normalVector = (vec) ->
+  distance = 0
+  for k, v of vec
+    distance += v * v
+  normal = Math.sqrt distance
+  divVector vec, normal

@@ -2,7 +2,7 @@
 'use strict'
 async = require 'async'
 _ = require 'underscore'
-{toTypeValue, encodeToString, decodeFromString} = require 'common'
+{toTypeValue, encodeToString, decodeFromString, addVector, divVector, multiVector, diffVector, diffAngle, normalVector} = require 'common'
 {Job, MapJob, Mapper} = require './job'
 Mongo = require 'mongo'
 js2String = require './js2string'

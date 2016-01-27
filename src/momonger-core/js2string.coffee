@@ -41,7 +41,6 @@ class Js2String
     else
       "function(){#{@strObjects}\nreturn #{src}}()"
 
-
   js2String: (current)->
     if _.isFunction current
       if current.name
