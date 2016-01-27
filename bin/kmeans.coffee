@@ -29,7 +29,7 @@ opts.parse [
 ,
   short       : 'i'
   long        : 'iterate'
-  description : 'max iteration'
+  description : 'max iteration. default: 100'
   value       : true
   required    : false
 ]

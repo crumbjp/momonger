@@ -23,19 +23,19 @@ opts.parse [
 ,
   short       : 'n'
   long        : 'noun-only'
-  description : 'configPath'
+  description : ''
   value       : false
   required    : false
 ,
   short       : 'u'
   long        : 'use-dictionary-coefficient'
-  description : 'configPath'
+  description : ''
   value       : false
   required    : false
 ,
   short       : 'f'
   long        : 'filter-noise'
-  description : 'configPath'
+  description : 'Filter small number, single KANA, and so on'
   value       : false
   required    : false
 ]

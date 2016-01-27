@@ -29,7 +29,7 @@ opts.parse [
 ,
   short       : 'n'
   long        : 'normalize'
-  description : ''
+  description : 'Adjust vector size to 1.0'
   value       : false
   required    : false
 ]

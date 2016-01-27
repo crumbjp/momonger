@@ -23,7 +23,7 @@ opts.parse [
 ,
   short       : 'D'
   long        : 'dictionary'
-  description : 'dictionary NS'
+  description : 'dictionary ns'
   value       : true
   required    : false
 ,
