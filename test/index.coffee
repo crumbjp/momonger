@@ -33,9 +33,11 @@ describe 'build data', ->
     require './common'
   describe 'node-jptokenizer', ->
     require './node-jptokenizer'
-  describe 'momonger-core', ->
-    require './momonger-core'
   describe 'momonger-tokenize', ->
     require './momonger-tokenize'
   describe 'momonger-vectorize', ->
     require './momonger-vectorize'
+  describe 'momonger-clusterize', ->
+    require './momonger-clusterize'
+  describe 'momonger-core', ->
+    require './momonger-core'

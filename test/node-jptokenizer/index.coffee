@@ -22,4 +22,3 @@ describe 'node-jptokenizer', ->
         expect(tokens[100].w).to.equal '個数'
         expect(tokens.length).to.equal 1951
         done null
-    done null
