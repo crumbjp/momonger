@@ -26,11 +26,18 @@ opts.parse [
   description : 'configPath'
   value       : true
   required    : false
+,
+  short       : 'n'
+  long        : 'normalize'
+  description : ''
+  value       : false
+  required    : false
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.token"
 append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
+normalize = opts.get('normalize') || false
 
 async   = require 'async'
 {Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
@@ -50,6 +57,7 @@ src.findOne {_id: '.meta'}, (err, meta)->
     idf: meta.idf
     dst
     append
+    normalize
   }
 
   jobControl = new JobControl momonger

@@ -2,7 +2,8 @@
 _ = require 'underscore'
 async = require 'async'
 {Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{toTypeValue} = require 'common'
+{normalVector} = require 'common'
+
 
 class Tfidf extends MapJob
   constructor: (@jobcontrol, @jobid, @config, @options)->
@@ -31,18 +32,12 @@ class Tfidf extends MapJob
 
       map: (doc, done)=>
         tfidf = {}
-        max = 0
         for word in doc.words
           idf = @idfById[word.w]
-          if idf
+          if idf and idf.value
             tfidf[word.w] = word.c * idf.value
-            tmpMax = Math.abs tfidf[word.w]
-            if !max or max < tmpMax
-              max = tmpMax
-        # normalize
-        if max
-          for k, v of tfidf
-            tfidf[k] = v/max
+        if @options.normalize
+          tfidf = normalVector tfidf
 
         @results.push [
           _id: doc._id
@@ -58,6 +53,7 @@ class Tfidf extends MapJob
   afterLastMap: (done)->
     return done null if @options.append?
     @meta.tfidf = @options.dst
+    @meta.normalize = @options.normalize
     async.parallel [
       (done) => @dstMongo.insert @meta, done
       (done) => @dstMongo.createIndex {a: 1}, done

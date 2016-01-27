@@ -13,12 +13,16 @@ class Idf extends MapJob
 
   mapper: ->
     class IdfMapper extends Mapper
-      beforeRun: (done)->
+      beforeRun: (done)=>
         @results = []
-        @srcMongo.getmeta (err, @meta)=>
-          @dictionaryMongo = new Mongo @meta.dictionary.mongo
-          done null
-          #@dictionaryMongo.init done
+        async.series [
+          (done) =>
+            @srcMongo.getmeta (err, @meta)=>
+              done err
+          (done) =>
+            @dictionaryMongo = new Mongo @meta.dictionary.mongo
+            done null
+        ], done
 
       map: (doc, done)=>
         @dictionaryMongo.findOne {_id: doc._id}, (err, word) =>

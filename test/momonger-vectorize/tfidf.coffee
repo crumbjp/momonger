@@ -11,6 +11,7 @@ describe 'TFIDF job', ->
       src: "#{momonger.database}.sampledoc.tf"
       idf: "#{momonger.database}.sampledoc.idf"
       dst: "#{momonger.database}.sampledoc.tfidf"
+      normalize: true
 
   it 'tfidf map', (done)->
     this.timeout 3000000
