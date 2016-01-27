@@ -28,7 +28,7 @@ opts.parse [
   required    : false
 ]
 src = opts.get 'src'
-dst = opts.get('dst') || "#{src}.token"
+dst = opts.get('dst') || "#{src}.phrase"
 configPath = opts.get('config') || 'config/momonger.conf'
 n = opts.get('ngram') || n
 

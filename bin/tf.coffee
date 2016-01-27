@@ -28,7 +28,7 @@ opts.parse [
   required    : false
 ]
 src = opts.get 'src'
-dst = opts.get('dst') || "#{src}.token"
+dst = opts.get('dst') || "#{src}.tf"
 append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 

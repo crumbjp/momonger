@@ -40,7 +40,7 @@ opts.parse [
   required    : false
 ]
 src = opts.get 'src'
-dst = opts.get('dst') || "#{src}.token"
+dst = opts.get('dst') || "#{src}.canopy"
 configPath = opts.get('config') || 'config/momonger.conf'
 t1 = parseFloat(opts.get('t1')) || 0.98
 t2 = parseFloat(opts.get('t2')) || 0.95
