@@ -23,7 +23,7 @@ mecabは複雑な接続スコアにより精度を上げているため、辞書
 #### JSONファイル
 スタンドアローン用にはJSONファイルによる辞書が使えます。
 
-https://raw.githubusercontent.com/crumbjp/momonger/master/NLP/tokenize/dictionary.json
+https://raw.githubusercontent.com/crumbjp/momonger/test/fixture/dictionary.json
 
 #### MongoDB baseの辞書
 collection そのものを辞書として使う事が出来ます。
@@ -48,7 +48,7 @@ MongoDB baseの辞書の場合は未知語として保存され、以降のtoken
 mkdir -p /tmp/jptokenizer
 cd /tmp/jptokenizer
 npm install node-jptokenizer
-wget https://raw.githubusercontent.com/crumbjp/momonger/master/NLP/tokenize/dictionary.json
+wget https://raw.githubusercontent.com/crumbjp/momonger/test/fixture/dictionary.json
 echo 'var JPTokenizer = require("node-jptokenizer");
 var tokenizer = new JPTokenizer({
   type: "file",
