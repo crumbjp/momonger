@@ -1,9 +1,9 @@
 'use strict'
 _ = require 'underscore'
 async = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{addVector, divVector, multiVector, diffVector, diffAngle, normalVector} = require 'common'
-
+Mongo = require 'momonger/mongo'
+{JobControl, Job, MapJob, Mapper, Worker} = require 'momonger/core'
+{addVector, divVector, multiVector, diffVector, diffAngle, normalVector} = require 'momonger/common'
 
 class Kmeans extends Job
   beforeRun: (done)->
@@ -183,7 +183,7 @@ class Kmeans extends Job
             return err if err
             @jobcontrol.wait jobid, ->
               done null
-      ], (err)->
-        done err
+      ], (err)=>
+        done err, @meta
 
 module.exports = Kmeans

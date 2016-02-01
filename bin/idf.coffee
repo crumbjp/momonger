@@ -47,8 +47,9 @@ useDictionaryCoefficient = opts.get 'use-dictionary-coefficient'
 filterNoise = opts.get 'filter-noise'
 
 async   = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{Idf} = require 'momonger-vectorize'
+Config = require 'momonger/config'
+{JobControl} = require 'momonger/core'
+{Idf} = require 'momonger/vectorize'
 
 options = {
   runLocal: false

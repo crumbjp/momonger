@@ -1,18 +1,7 @@
 async = require 'async'
-fs = require 'fs'
-{Mongo, Config} = require 'momonger-core'
-
-importDocs = (filename, collection, done)->
-  json = fs.readFileSync filename, 'utf-8'
-  elements = JSON.parse(json)
-  for element in elements
-    element._id = Mongo.ObjectId element._id.$oid if element._id.$oid
-  async.series [
-    (done) => collection.drop ->
-      done null
-    (done) =>
-      collection.bulkInsert elements, done
-  ], done
+Mongo = require 'momonger/mongo'
+Config = require 'momonger/config'
+{importDocs} = require 'momonger/common'
 
 describe 'build data', ->
   before (done)->

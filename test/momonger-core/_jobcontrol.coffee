@@ -1,6 +1,7 @@
 _ = require 'underscore'
 async = require 'async'
-{Mongo, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
+Mongo = require 'momonger/mongo'
+{JobControl, Job, MapJob, Mapper} = require 'momonger/core'
 
 exports.test = (options, config)->
   describe 'Jobcontrol', ->

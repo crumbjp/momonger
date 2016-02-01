@@ -1,6 +1,6 @@
 'use strict'
-Dictionary = require('./dictionary')
-mongolib = require('./mongolib')
+Dictionary = require './dictionary'
+mongolib = require './mongolib'
 
 class JPTokenizer
   constructor: (config)->

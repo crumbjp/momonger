@@ -1,7 +1,7 @@
 'use strict'
 _ = require 'underscore'
 async = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
+{JobControl, Job, MapJob, Mapper} = require 'momonger/core'
 
 class Df extends MapJob
   beforeFirstMap: (done)->
@@ -31,5 +31,8 @@ class Df extends MapJob
   afterLastMap: (done)->
     @meta.df = @options.dst
     @dstMongo.insert @meta, done
+
+  afterRun: (done) ->
+    done null, @meta
 
 module.exports = Df

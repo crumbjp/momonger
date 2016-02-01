@@ -1,5 +1,7 @@
 'use strict'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
+Config = require 'momonger/config'
+Mongo = require 'momonger/mongo'
+{Worker} = require 'momonger/core'
 
 jobcontrol_test = require './_jobcontrol'
 

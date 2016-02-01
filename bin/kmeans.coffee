@@ -40,8 +40,10 @@ cluster = opts.get 'cluster'
 iterate = parseFloat(opts.get('iterate')) || 100
 
 async   = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{Kmeans} = require 'momonger-clusterize'
+Config = require 'momonger/config'
+Mongo = require 'momonger/mongo'
+{JobControl} = require 'momonger/core'
+{Kmeans} = require 'momonger/clusterize'
 
 options = {
   runLocal: false

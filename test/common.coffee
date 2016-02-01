@@ -1,5 +1,4 @@
-async = require 'async'
-{addVector, multiVector, divVector, diffVector, diffAngle, normalVector} = require 'common'
+{addVector, multiVector, divVector, diffVector, diffAngle, normalVector} = require 'momonger/common'
 
 describe 'common', ->
   it 'addVector', ->

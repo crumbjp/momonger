@@ -22,19 +22,20 @@ opts.parse [
   required    : false
 ,
   short       : 'n'
-  long        : 'ngram'
-  description : 'number of ngram'
+  long        : 'n-gram'
+  description : 'default: 4'
   value       : true
   required    : false
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.phrase"
 configPath = opts.get('config') || 'config/momonger.conf'
-n = opts.get('ngram') || n
+n = opts.get('n-gram') || 4
 
 async   = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{Tokenize, Phrase} = require 'momonger-tokenize'
+Config = require 'momonger/config'
+{JobControl} = require 'momonger/core'
+{Phrase} = require 'momonger/tokenize'
 
 options = {
   runLocal: false

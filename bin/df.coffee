@@ -26,8 +26,9 @@ dst = opts.get('dst') || "#{src}.df"
 configPath = opts.get('config') || 'config/momonger.conf'
 
 async   = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{Df} = require 'momonger-vectorize'
+Config = require 'momonger/config'
+{JobControl} = require 'momonger/core'
+{Df} = require 'momonger/vectorize'
 
 options = {
   runLocal: false

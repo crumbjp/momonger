@@ -23,13 +23,13 @@ opts.parse [
 ,
   short       : 'D'
   long        : 'dictionary'
-  description : 'dictionary ns'
+  description : 'dictionary config path'
   value       : true
   required    : false
 ,
   short       : 'c'
   long        : 'config'
-  description : 'configPath'
+  description : 'config path'
   value       : true
   required    : false
 ]
@@ -41,8 +41,9 @@ dictionaryPath = opts.get('dictionary') || 'config/dictionary.conf'
 
 
 async   = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{Tokenize} = require 'momonger-tokenize'
+Config = require 'momonger/config'
+{JobControl} = require 'momonger/core'
+{Tokenize} = require 'momonger/tokenize'
 
 options = {
   chunkSize: 10 # TODO: 100 or 1000 ?

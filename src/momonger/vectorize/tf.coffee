@@ -1,7 +1,7 @@
 'use strict'
 _ = require 'underscore'
 async = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
+{JobControl, Job, MapJob, Mapper} = require 'momonger/core'
 
 class Tf extends MapJob
   constructor: (@jobcontrol, @jobid, @config, @options)->
@@ -46,7 +46,9 @@ class Tf extends MapJob
     async.parallel [
       (done) => @dstMongo.insert @meta, done
       (done) => @dstMongo.createIndex {a: 1}, done
-    ], (err) =>
-      done err, @meta
+    ], done
+
+  afterRun: (done) ->
+    done null, @meta
 
 module.exports = Tf

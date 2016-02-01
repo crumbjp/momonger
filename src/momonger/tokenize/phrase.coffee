@@ -1,7 +1,9 @@
 'use strict'
 _ = require 'underscore'
 async = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
+Config = require 'momonger/config'
+Mongo = require 'momonger/mongo'
+{JobControl, Job, MapJob, Mapper} = require 'momonger/core'
 
 class Phrase extends Job
   beforeRun: (done)->
@@ -77,7 +79,8 @@ class Phrase extends Job
                 for i in [1..(@options.n-2)]
                   @buildPhrase current[i..-1]
                 @buildPhrase current
-            @dstMongo.bulkUpdate _.values(@updatePhraseById) , done
+            @dstMongo.bulkUpdate _.values(@updatePhraseById) , (err)->
+              done err
 
     class PhraseCValue extends MapJob
       mapper: ->
@@ -171,6 +174,8 @@ class Phrase extends Job
           meta.phrase =
             n: @options.n
             ns: @options.dst
-          @dstMongo.insert meta, done
+          @dstMongo.insert meta, (err)->
+            done err, meta
+
 
 module.exports = Phrase

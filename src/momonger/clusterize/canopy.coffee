@@ -1,8 +1,8 @@
 'use strict'
 _ = require 'underscore'
 async = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{addVector, divVector, multiVector, diffVector, diffAngle} = require 'common'
+{JobControl, Job, MapJob, Mapper, Worker} = require 'momonger/core'
+{addVector, divVector, multiVector, diffVector, diffAngle} = require 'momonger/common'
 
 
 class Canopy extends Job
@@ -59,6 +59,7 @@ class Canopy extends Job
               return done err if err
               @srcMongo.getmeta (err, meta)=>
                 meta.canopy = @options.dst
-                @dstMongo.insert meta, done
+                @dstMongo.insert meta, (err)->
+                  done err, meta
 
 module.exports = Canopy

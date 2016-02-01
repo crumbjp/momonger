@@ -2,9 +2,9 @@
 'use strict'
 async = require 'async'
 _ = require 'underscore'
-{toTypeValue, encodeToString, decodeFromString, addVector, divVector, multiVector, diffVector, diffAngle, normalVector} = require 'common'
+{toTypeValue, encodeToString, decodeFromString, addVector, divVector, multiVector, diffVector, diffAngle, normalVector} = require 'momonger/common'
 {Job, MapJob, Mapper} = require './job'
-Mongo = require 'mongo'
+Mongo = require 'momonger/mongo'
 js2String = require './js2string'
 
 class JobImpl extends Mongo

@@ -2,7 +2,8 @@
 
 _ = require 'underscore'
 async = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
+Mongo = require 'momonger/mongo'
+{JobControl, Job, MapJob, Mapper} = require 'momonger/core'
 
 class Tokenize extends MapJob
   constructor: (@jobcontrol, @jobid, @config, @options)->
@@ -14,7 +15,7 @@ class Tokenize extends MapJob
   mapper: ->
     class TokenizeMapper extends Mapper
       beforeRun: (done) =>
-        @JPTokenizer = require 'node-jptokenizer'
+        @JPTokenizer = require 'momonger/node-jptokenizer'
         done null
 
       map: (doc, done)=>
@@ -62,7 +63,7 @@ class Tokenize extends MapJob
         }
 
   afterRun: (done)->
-    JPTokenizer = require 'node-jptokenizer'
+    JPTokenizer = require 'momonger/node-jptokenizer'
     jptokenizer = new JPTokenizer @options.dictionary
     meta =
       docs: @options.src

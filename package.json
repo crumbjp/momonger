@@ -25,5 +25,8 @@
     "chai": "3.4.1",
     "coffee-coverage": "0.7.0",
     "mocha": "2.3.4"
+  },
+  "scripts": {
+    "build": "rm -rf built && coffee -o 'built' -c src && coffee -o 'built' -c bin && cp README.md package.json built/"
   }
 }

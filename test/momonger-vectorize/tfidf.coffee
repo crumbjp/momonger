@@ -1,6 +1,8 @@
 async = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{Tfidf} = require 'momonger-vectorize'
+Config = require 'momonger/config'
+Mongo = require 'momonger/mongo'
+{JobControl} = require 'momonger/core'
+{Tfidf} = require 'momonger/vectorize'
 
 {momonger, dictionary} = Config.load 'config/test.conf'
 

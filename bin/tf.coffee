@@ -33,8 +33,9 @@ append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 
 async   = require 'async'
-{Mongo, Config, JobControl, Job, MapJob, Mapper, Worker} = require 'momonger-core'
-{Tf} = require 'momonger-vectorize'
+Config = require 'momonger/config'
+{JobControl} = require 'momonger/core'
+{Tf} = require 'momonger/vectorize'
 
 options = {
   runLocal: false

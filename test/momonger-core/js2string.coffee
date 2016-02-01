@@ -1,4 +1,4 @@
-js2String = require 'momonger-core/js2string'
+js2String = require 'momonger/core/js2string'
 
 describe 'js2String', ->
   it 'hash', ->

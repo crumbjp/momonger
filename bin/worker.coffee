@@ -20,7 +20,8 @@ opts.parse [
 configPath = 'config/momonger.conf'
 configPath ||= opts.get 'config'
 jobs = parseInt(opts.get('jobs')) || 5
-{Worker, Config} = require 'momonger-core'
+Config = require 'momonger/config'
+{Worker} = require 'momonger/core'
 
 momonger = Config.load configPath
 

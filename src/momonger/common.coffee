@@ -1,6 +1,20 @@
 'use strict'
 _ = require 'underscore'
-Mongo = require 'mongo'
+fs = require 'fs'
+async = require 'async'
+Mongo = require 'momonger/mongo'
+
+exports.importDocs = (filename, collection, done)->
+  json = fs.readFileSync filename, 'utf-8'
+  elements = JSON.parse(json)
+  for element in elements
+    element._id = Mongo.ObjectId element._id.$oid if element._id.$oid
+  async.series [
+    (done) => collection.drop ->
+      done null
+    (done) =>
+      collection.bulkInsert elements, done
+  ], done
 
 exports.toTypeValue = (value) ->
   type = typeof value

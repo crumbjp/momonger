@@ -1,8 +1,8 @@
 'use strict'
 _ = require 'underscore'
 async = require 'async'
-Mongo = require 'mongo'
-{toTypeValue} = require 'common'
+Mongo = require 'momonger/mongo'
+{toTypeValue} = require 'momonger/common'
 
 class Job
   constructor: (@jobcontrol, @jobid, @config, @options)->
