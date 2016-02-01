@@ -12,14 +12,13 @@ opts.parse [
 ,
   short       : 'j'
   long        : 'jobs'
-  description : 'Specify num of jobs'
+  description : 'Specify num of jobs. default: 10'
   value       : true
   required    : false
 ,
 ]
-configPath = 'config/momonger.conf'
-configPath ||= opts.get 'config'
-jobs = parseInt(opts.get('jobs')) || 5
+configPath = opts.get('config') || 'config/momonger.conf'
+jobs = parseInt(opts.get('jobs')) || 10
 Config = require 'momonger/config'
 {Worker} = require 'momonger/core'
 
