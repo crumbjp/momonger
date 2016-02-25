@@ -2,7 +2,7 @@
 export NODE_PATH=src
 coffee ./bin/import_dictionary.coffee -f test/fixture/dictionary.json
 coffee ./bin/import_sample.coffee -f test/fixture/sampledocs.json -d momonger.sampledoc
-coffee ./bin/tokenize.coffee -s momonger.sampledoc -d momonger.sampledoc.token
+coffee ./bin/tokenize.coffee -s momonger.sampledoc -d momonger.sampledoc.token -f body
 coffee ./bin/phrase.coffee -s momonger.sampledoc.token -d momonger.sampledoc.phrase
 coffee ./bin/tf.coffee -s momonger.sampledoc.token -d momonger.sampledoc.tf
 coffee ./bin/df.coffee -s momonger.sampledoc.tf -d momonger.sampledoc.df

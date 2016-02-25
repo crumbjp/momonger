@@ -15,6 +15,12 @@ opts.parse [
   value       : true
   required    : false
 ,
+  short       : 'f'
+  long        : 'field'
+  description : 'target field'
+  value       : true
+  required    : true
+,
   short       : 'a'
   long        : 'append'
   description : 'append mode'
@@ -35,6 +41,7 @@ opts.parse [
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.token"
+field = opts.get 'field'
 append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 dictionaryPath = opts.get('dictionary') || 'config/dictionary.conf'
@@ -50,6 +57,7 @@ options = {
   runLocal: false
   src
   dst
+  field
   dictionary: Config.load dictionaryPath
   append
 }

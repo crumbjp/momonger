@@ -5,7 +5,7 @@ cp ../config/dictionary.conf ./config/
 cp ../config/momonger.conf ./config/
 node ./node_modules/momonger/bin/import_dictionary.js -f ../test/fixture/dictionary.json
 node ./node_modules/momonger/bin/import_sample.js -f ../test/fixture/sampledocs.json -d momonger.sampledoc
-node ./node_modules/momonger/bin/tokenize.js -s momonger.sampledoc -d momonger.sampledoc.token
+node ./node_modules/momonger/bin/tokenize.js -s momonger.sampledoc -d momonger.sampledoc.token -f body
 node ./node_modules/momonger/bin/phrase.js -s momonger.sampledoc.token -d momonger.sampledoc.phrase
 node ./node_modules/momonger/bin/tf.js -s momonger.sampledoc.token -d momonger.sampledoc.tf
 node ./node_modules/momonger/bin/df.js -s momonger.sampledoc.tf -d momonger.sampledoc.df
