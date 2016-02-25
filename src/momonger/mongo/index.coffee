@@ -1,6 +1,6 @@
 async = require 'async'
 mongodb = require 'mongodb'
-
+_ = require 'underscore'
 dbByKey = {}
 class Mongo
   @ObjectId: mongodb.ObjectId
@@ -10,26 +10,42 @@ class Mongo
     dbByKey[key] = null
     db.close() if db
 
+  @topology: (config) ->
+    return mongodb.Server(config.host, config.port) if config.host
+    throw Error "Ignore hosts" unless _.isArray config.hosts
+    servers = []
+    for host in config.hosts
+      [host, port] = host.split ':'
+      port = parseInt(port) or 27017
+      servers.push mongodb.Server(host, port)
+    if config.replset
+      return mongodb.ReplSet servers
+    if config.mongos
+      return mongodb.Mongos servers
+    throw Error "Unknown topology: #{JSON.stringify(config)}"
+
   @connect: (key, config)->
     if dbByKey[key]
       db = dbByKey[key]
       return
     if config.authdbname
-      db = new mongodb.Db config.authdbname, mongodb.Server(config.host, config.port), safe: true
+      db = new mongodb.Db config.authdbname, @topology(config), safe: true
       db.open (err)->
         throw Error err if err
         db.authenticate config.user, config.password, (err)=>
           throw Error err if err
-        db = db.db config.database
-        db.opened = true
+          db = db.db config.database
+          db.opened = true
+          dbByKey[key] = db
     else
-      db = new mongodb.Db config.database, mongodb.Server(config.host, config.port), safe: true
+      db = new mongodb.Db config.database, @topology(config), safe: true
       db.open (err)->
         throw Error err if err
         db.opened = true
     dbByKey[key] = db
     db.on 'close', ->
       unless dbByKey[key] == null
+        # TODO: Unexpedted close.. how to treat ?
         dbByKey[key] = undefined
         Mongo.connect key, config
 
@@ -38,14 +54,9 @@ class Mongo
     dbName = splitted.shift()
     collectionName = splitted.join '.'
 
-    return new Mongo {
-      host: config.host
-      port: config.port
+    return new Mongo _.extend {}, config, {
       database: dbName
       collection: collectionName
-      authdbname: config.authdbname
-      user: config.user
-      password: config.password
     }
 
   _db: ->
@@ -60,14 +71,9 @@ class Mongo
 
   constructor: (@config)->
     @initCallbacks = []
-    @key = JSON.stringify {
-      host: @config.host
-      port: @config.port
-      database: @config.database
-      authdbname: @config.authdbname
-      user: @config.user
-      password: @config.password
-    }
+    @key = ''
+    for k, v of @config
+      @key += v unless _.isNull(v) or _.isUndefined(v)
     Mongo.connect @key, @config
 
   getmeta: (done)->
@@ -77,16 +83,28 @@ class Mongo
       @meta = meta
       done err, @meta
 
+  initialized: (done)->
+    done null
+
+  callInitialized: (done)->
+    return done null if @called
+    @called = true
+    @initialized done
+
   init: (done)->
-    return done null, @_db() if @_db().opened
+    if @_db().opened
+      @callInitialized =>
+        done null, @_db()
+      return
     @initCallbacks.push done
     # TODO: async.doUntil
     @interval ||= setInterval ()=>
       if @_db().opened
         clearInterval @interval
-        for callback in @initCallbacks
-          callback null, @_db()
-        @initCallbacks = []
+        @callInitialized =>
+          for callback in @initCallbacks
+            callback null, @_db()
+          @initCallbacks = []
     , 100
 
   bulkInsert: (docs, done) ->
@@ -159,6 +177,9 @@ class Mongo
   remove: (args...)->
     @_col (err, col) ->
       col.remove args...
+  removeOne: (args...)->
+    @_col (err, col) ->
+      col.removeOne args...
   aggregate: (args...)->
     @_col (err, col) ->
       col.aggregate args...
