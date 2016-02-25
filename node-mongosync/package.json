@@ -1,0 +1,25 @@
+{
+  "name": "node-mongosync",
+  "version": "0.0.1",
+  "description": "Alpha version",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "hiroaki.kubota@mail.crumb.jp",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^1.5.0",
+    "mongodb": "^2.0.49",
+    "opts": "^1.2.2",
+    "underscore": "^1.8.3"
+  },
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/crumbjp/momonger.git"
+  },
+  "scripts": {
+    "build": "rm -rf built && coffee -o 'built' -c src && cp README.md package.json built/"
+  }
+}

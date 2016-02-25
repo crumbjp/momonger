@@ -1,0 +1,37 @@
+{
+  name: 's1',
+  src: {
+    hosts       : ['localhost:27017'],
+    replset     : true,
+    authdbname  : null,
+    user        : null,
+    password    : null,
+  },
+  dst: {
+    hosts       : ['localhost:27018'],
+    replset     : true,
+    authdbname  : null,
+    user        : null,
+    password    : null,
+    database    : 'test',
+    collection  : 'last'
+  },
+  options: {
+    loglv: 'info',
+    targetDB: {
+      'test': 'test2',
+      '*': false
+    },
+    syncIndex: {
+      create: true,
+      drop: false
+    },
+    syncCommand: {
+      '*': false,
+      drop: true,
+    },
+    dryrun: false,
+    bulkIntervalMS: 1000,
+    bulkLimit: 5000,
+  }
+}
