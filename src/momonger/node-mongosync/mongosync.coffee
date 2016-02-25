@@ -25,9 +25,9 @@ class Mongosync
     unless @config.name
       error = true
       @logger.error 'Config error: `name` is required'
-    unless @config.src.replset
+    unless @config.src.type == 'replset'
       error = true
-      @logger.error 'Config error: `src.replset` is required'
+      @logger.error 'Config error: `src.type` must be `replset`'
     throw Error 'Config error' if error
 
     @config.options.targetDB ||= {'*': true}
@@ -156,15 +156,14 @@ class Mongosync
           return done null
         @logger.info 'dropIndex', oplog.o
       else
-        unless @config.options.syncCommand['*']
-          o = {}
-          for cmd,v of oplog.o
-            unless @config.options.syncCommand[cmd]
-              @logger.info "Skip command {#{cmd}: #{v}}"
-            else
-              o[cmd] = v
-          oplog.o = o
-          return done null if _.isEmpty(oplog.o)
+        o = {}
+        for cmd,v of oplog.o
+          if (if @config.options.syncCommand[cmd]? then @config.options.syncCommand[cmd] else @config.options.syncCommand['*'])
+            o[cmd] = v
+          else
+            @logger.info "Skip command {#{cmd}: #{v}}"
+        oplog.o = o
+        return done null if _.isEmpty(oplog.o)
       @replication =>
         return @runCommand ns, oplog, (err) => done err
       return
@@ -286,8 +285,9 @@ class Mongosync
           async.eachSeries pendedLogs, (oplog, done) =>
             @applyOplog oplog, done
           , (err) =>
-            @logger.error 'Repair error', err
-            throw Error '@replication error' if err
+            if err
+              @logger.error 'Repair error', err
+              throw Error '@replication error'
             finish()
           return
         else

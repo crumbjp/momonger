@@ -1,6 +1,7 @@
+https://github.com/crumbjp/momonger/tree/master/node-mongosync
+
 # node-mongosync
 Offer the way to replicate from a MongoDB replica-set to another cluster.
-
 
 ## Feature
 When using MongoDB, sometime we want a realtime copy cluster.
@@ -10,6 +11,18 @@ However, MongoDB don't offer the way to do it.
 
 MongoDB replica-set has the OpLog collection for replication for themselves.
 `node-mongosync` can read this OpLog and reflect to another cluster.
+
+Also, `node-mongosync` offer multiple source replication.
+```
++---------+                              +-----------------+
+| RepSet1 |  - node-mongosync process -> |                 |
++---------+                              |                 |
+                                         | MongoDB cluster |
++---------+                              |                 |
+| RepSet2 |  - node-mongosync process -> |                 |
++---------+                              +-----------------+
+
+```
 
 ### Using tailable cursor
 OpLog collection is created as a Capped-collection.
@@ -34,9 +47,7 @@ I don't know the MongoDB's guideline which the OpLog format compatibility is sav
 It's looks like there is the almost perfect compatibility.
 I have been run replicate production level TB class cluster from 2.6.X to 3.0.X a year.
 
-
 ## Quick start
-
 #### 1. Download and extract MongoDB
 from https://www.mongodb.org/downloads#production
 
@@ -64,20 +75,12 @@ $ npm install node-mongosync
 $ echo "{
   name: 'mongosync_test',
   src: {
+    type        : 'replset',
     hosts       : ['localhost:27017'],
-    replset     : true,
-    authdbname  : null,
-    user        : null,
-    password    : null,
   },
   dst: {
     host        : 'localhost',
-    port        : 27018,
-    authdbname  : null,
-    user        : null,
-    password    : null,
-    database    : 'test',
-    collection  : 'last'
+    port        : 27018
   },
   options: {
     loglv: 'verbose',
@@ -90,12 +93,9 @@ $ echo "{
       drop: false
     },
     syncCommand: {
-      '*': false,
-      drop: true,
+      '*': true,
+      dropDatabase: false,
     },
-    dryrun: false,
-    bulkIntervalMS: 1000,
-    bulkLimit: 5000,
   }
 }" > test.conf
 $ node ./node_modules/node-mongosync/index.js -c test.conf
@@ -117,11 +117,11 @@ syncIndex: {
 }
 ```
 
-##### Sync only 'drop' command
+##### Sync all command without 'dropDatabase'
 ```js
 syncCommand: {
-  '*': false,
-  drop: true,
+  '*': true,
+  dropDatabase: false,
 }
 ```
 
@@ -207,3 +207,36 @@ Confirm sync process terminal
 [info]: command { drop: 'tmp' }
 [info]: Skip command {dropDatabase: 1}
 ```
+
+## Config field
+#### name: (string)
+The source ReplSet ID. Must be unique at multiple source replication.
+
+#### src: (mongo-info)
+Source MongoDB cluster.
+Must specify `replset: true`
+
+#### dst: (mongo-info)
+Destination MongoDB cluster.
+
+Specify the collection by `database` and `collection` field.
+`node-mongosync` save a oplog Timestamp that already reflected for restart process.
+
+`database: 'mongosync', collection: 'last'` is default.
+
+#### mongo-info type
+*field* | *type* | *format* |
+--|--|--|--
+type|string| `standalone` / `replset` / `mongos` | `standalone` is default.
+hosts | string array | hostname:port | Required when type is not `standalone`.
+host | string  | | Required when type is `standalone`.
+port | integer | | Required when type is `standalone`.
+authdbname | string  | |
+user | string  | |
+password | string  | |
+options.loglv | string | `debug` / `trace` / `verbose` / `info` / `error` | `info` is default.
+options.targetDB | hash | `from`: `to` | Required. `from` is source dbname and `to` is 'destination dbname'. `'*': true` means all database to same database name.
+options.syncIndex | hash | `create: boolean, drop: boolean`| Sync or not `createIndex` and `dropIndex`. `{create: false, drop: false}` is default.
+options.syncCommand | hash | `command: boolean` | `*` means all command.
+options.bulkIntervalMS | integer | | 1000 is default.
+options.bulkLimit | integer | | 5000 is default.

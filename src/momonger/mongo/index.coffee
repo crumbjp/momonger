@@ -11,16 +11,18 @@ class Mongo
     db.close() if db
 
   @topology: (config) ->
-    return mongodb.Server(config.host, config.port) if config.host
+    if !config.type or config.type == 'server'
+      throw Error 'Ignore host, port' unless config.host and config.port
+      return mongodb.Server(config.host, config.port)
     throw Error "Ignore hosts" unless _.isArray config.hosts
     servers = []
     for host in config.hosts
       [host, port] = host.split ':'
       port = parseInt(port) or 27017
       servers.push mongodb.Server(host, port)
-    if config.replset
+    if config.type == 'replset'
       return mongodb.ReplSet servers
-    if config.mongos
+    if config.type == 'mongos'
       return mongodb.Mongos servers
     throw Error "Unknown topology: #{JSON.stringify(config)}"
 
@@ -71,9 +73,7 @@ class Mongo
 
   constructor: (@config)->
     @initCallbacks = []
-    @key = ''
-    for k, v of @config
-      @key += v unless _.isNull(v) or _.isUndefined(v)
+    @key = "#{@config.type}#{@config.host}#{@config.port}#{@config.hosts}#{@config.authdbname}#{@config.user}#{@config.database}"
     Mongo.connect @key, @config
 
   getmeta: (done)->

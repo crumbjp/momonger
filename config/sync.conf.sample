@@ -1,15 +1,15 @@
 {
-  name: 's1',
+  name: 'test1',
   src: {
+    type        : 'replset',
     hosts       : ['localhost:27017'],
-    replset     : true,
     authdbname  : null,
     user        : null,
     password    : null,
   },
   dst: {
-    hosts       : ['localhost:27018'],
-    replset     : true,
+    host       : 'localhost',
+    port       : 27018,
     authdbname  : null,
     user        : null,
     password    : null,
@@ -30,7 +30,6 @@
       '*': false,
       drop: true,
     },
-    dryrun: false,
     bulkIntervalMS: 1000,
     bulkLimit: 5000,
   }
