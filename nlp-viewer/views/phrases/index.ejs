@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><a href="/phrases/<%= name %>"><%= name %></a></h1>
+
+    <table>
+      <tr>
+        <th></th>
+        <th>phrase</th>
+        <th>words</th>
+        <th>c-value</th>
+      </tr>
+      <% for (var i in phrases) { var phrase = phrases[i]; %>
+      <tr>
+        <td><button class="put_phrase" value="<%= phrase._id %>">辞書登録</button></td>
+        <th><%= phrase._id %></th>
+        <td><%= phrase.ws.join(', ') %></td>
+        <td><%= phrase.tcv %></td>
+        <td><button class="del_phrase" value="<%= phrase._id %>">削除</button></td>
+      </tr>
+      <% } %>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script><!--
+$(function(){
+  $('button.put_phrase').click(function(e){
+    var button = $(this);
+    $.get('?new_word='+button.val(), function(body, result){
+      if ( result === 'success' ) {
+        button.closest('tr').remove();
+      }
+    });
+  });
+  $('button.del_phrase').click(function(e){
+    var button = $(this);
+    $.get('?del_word='+button.val(), function(body, result){
+      if ( result === 'success' ) {
+        button.closest('tr').remove();
+      }
+    });
+  });
+});
+	--></script>
+  </body>
+</html>
