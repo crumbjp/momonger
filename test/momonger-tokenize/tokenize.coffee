@@ -12,6 +12,7 @@ describe 'tokenize', ->
       runLocal: true
       src: "#{momonger.database}.sampledoc"
       dst: "#{momonger.database}.sampledoc.token"
+      field: 'body'
       chunkSize: 3
       dictionary: dictionary
 

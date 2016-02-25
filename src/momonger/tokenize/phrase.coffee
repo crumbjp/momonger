@@ -21,11 +21,10 @@ class Phrase extends Job
             i:1
           .toArray done
       getElement: (words, done)->
-        @dictionaryMongo.find
+        @dictionaryMongo.findAsArray
           _id:
             $in: _.map(words, (w)-> w.c)
-        , (err, cursor) =>
-          cursor.toArray done
+        , done
 
       buildPhrase: (arr)=>
         return unless arr.length >= 2

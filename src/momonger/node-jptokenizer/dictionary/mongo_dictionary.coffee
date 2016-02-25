@@ -7,20 +7,23 @@ class MongoDictionary extends Mongo
   findBest: (word, done)->
     @find
       w: word
-    .sort
-      s: -1
-    .limit 1
-    .toArray (err, arr)->
+    , (err, cursor)->
       return done err if err
-      done null, arr[0]
+      cursor.sort
+        s: -1
+      .limit 1
+      .toArray (err, arr)->
+        return done err if err
+        done null, arr[0]
 
   findCandidates: (query, done)->
-    @find query
-    .sort
-      l: -1
-      s: 1
-    .toArray (err, arr)->
-      done err, arr
+    @find query, (err, cursor)->
+      return done err if err
+      cursor.sort
+        l: -1
+        s: 1
+      .toArray (err, arr)->
+        done err, arr
 
   upsert: (doc, done)->
     @findAndModify

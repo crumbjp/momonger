@@ -29,7 +29,7 @@ class Tokenize extends MapJob
 
         jptokenizer.init (err) =>
           return done err if err
-          jptokenizer.parse_doc doc.body, (err, tokens)=>
+          jptokenizer.parse_doc doc[@options.field], (err, tokens)=>
             return done err if err
             results = []
             for token in tokens
@@ -68,6 +68,7 @@ class Tokenize extends MapJob
     meta =
       docs: @options.src
       token: @options.dst
+      field: @options.field
       dictionary: @options.dictionary
     async.parallel [
       (done) => @dstMongo.createIndex {d: 1, i: 1}, done

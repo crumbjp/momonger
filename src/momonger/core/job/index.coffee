@@ -198,9 +198,6 @@ class MapJob extends Job
     console.log 'map::afterRun'
     done null
 
-  cursor: ->
-    return @srcMongo.find(@options.query)
-
   mapper: ->
     throw 'Should retern Mapper job'
 
@@ -245,14 +242,16 @@ class MapJob extends Job
     @jobids = []
     async.series [
       (done) =>
-        Mongo.inBatch @cursor(), @options.chunkSize,
-          (data)-> data._id
-        ,
-          (ids, done)=>
-            @_createMapper ids, (err, jobid)=>
-              @jobids.push jobid
-              done null
-        , done
+        @srcMongo.find @options.query, (err, cursor)=>
+          return done err if err
+          Mongo.inBatch cursor, @options.chunkSize,
+            (data)-> data._id
+          ,
+            (ids, done)=>
+              @_createMapper ids, (err, jobid)=>
+                @jobids.push jobid
+                done null
+          , done
       (done) =>
         async.each @jobids, (jobid, done) =>
           @jobcontrol.wait jobid, done
@@ -268,17 +267,19 @@ class MapJob extends Job
           chunkSize = Math.floor(result / 100) + 1
           done null
       (done) =>
-        Mongo.inBatch @emitidsMongo.find(), chunkSize,
-          (data)-> data.ids
-        ,
-          (idsArr, done)=>
-            reduceIds = []
-            for ids in idsArr
-              reduceIds = reduceIds.concat ids
-            @_createReducer reduceIds, (err, jobid)=>
-              @jobids.push jobid
-              done null
-        , done
+        @emitidsMongo.find {}, (err, cursor)=>
+          return done err if err
+          Mongo.inBatch cursor, chunkSize,
+            (data)-> data.ids
+          ,
+            (idsArr, done)=>
+              reduceIds = []
+              for ids in idsArr
+                reduceIds = reduceIds.concat ids
+              @_createReducer reduceIds, (err, jobid)=>
+                @jobids.push jobid
+                done null
+          , done
       (done) =>
         async.each @jobids, (jobid, done) =>
           @jobcontrol.wait jobid, done
