@@ -36,7 +36,7 @@ class Mongosync
     @config.options.bulkIntervalMS ||= 1000
     @config.options.bulkLimit ||= 5000
 
-  init: (done)->
+  init: (done) ->
     @opByNs = {}
     @logCount = 0
     @oplogMongo = new Mongo @oplogConfig
@@ -45,13 +45,13 @@ class Mongosync
     @replicating = false
     @repairMode = false # TODO:
     @pendedLogs = []
-    async.during (done)=>
+    async.during (done) =>
       setTimeout =>
         done null, true
       , @config.options.bulkIntervalMS
     , (done) =>
       @replication done
-    , (err)=>
+    , (err) =>
       return
     done null
 
@@ -97,14 +97,14 @@ class Mongosync
     , (err, cursor) =>
       done err, cursor
 
-  parseNS: (ns)->
+  parseNS: (ns) ->
     ns_split  = ns.split('\.')
     {
       db  : ns_split.shift()
       col : ns_split.join('\.')
     }
 
-  convertDB: (logNS)->
+  convertDB: (logNS) ->
     ns = @parseNS(logNS)
     if _.isString @config.options.targetDB[ns.db]
       ns.db = @config.options.targetDB[ns.db]
@@ -133,7 +133,7 @@ class Mongosync
 
       done null, op
 
-  applyOplog: (oplog, done)=>
+  applyOplog: (oplog, done) =>
     @logger.debug 'applyOplog', oplog
     convertedNS = @convertDB oplog.ns
     return done null unless convertedNS
@@ -167,7 +167,7 @@ class Mongosync
       @replication =>
         return @runCommand ns, oplog, (err) => done err
       return
-    @getOp ns, (err, op)=>
+    @getOp ns, (err, op) =>
       return done err if err
       bulk = op.bulk
       mongo = op.mongo
@@ -297,7 +297,7 @@ class Mongosync
       finish()
 
 
-  sync: (done)->
+  sync: (done) ->
     @opQuery @lastTimestamp, (err, cursor) =>
       @stream = cursor.stream()
       @stream.on 'data', (oplog) =>
@@ -317,13 +317,13 @@ class Mongosync
   start: (done) ->
     @logger.verbose 'start', @config
     @init (err) =>
-      async.during (done)=>
+      async.during (done) =>
         done null, true
       , (done) =>
-        @getLastTimestamp (err)=>
+        @getLastTimestamp (err) =>
           return done err if err
           @sync done
-      , (err)=>
+      , (err) =>
         @logger.error 'error', err
 
 module.exports = Mongosync
