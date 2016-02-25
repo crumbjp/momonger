@@ -1,4 +1,3 @@
+!.gitignore
 built
 node_modules
-\#*\#
-.\#*
