@@ -1,3 +1,4 @@
+
 https://github.com/crumbjp/momonger/tree/master/node-mongosync
 
 # node-mongosync
@@ -225,18 +226,18 @@ Specify the collection by `database` and `collection` field.
 `database: 'mongosync', collection: 'last'` is default.
 
 #### mongo-info type
-*field* | *type* | *format* |
---|--|--|--
-type|string| `standalone` / `replset` / `mongos` | `standalone` is default.
-hosts | string array | hostname:port | Required when type is not `standalone`.
-host | string  | | Required when type is `standalone`.
-port | integer | | Required when type is `standalone`.
-authdbname | string  | |
-user | string  | |
-password | string  | |
-options.loglv | string | `debug` / `trace` / `verbose` / `info` / `error` | `info` is default.
-options.targetDB | hash | `from`: `to` | Required. `from` is source dbname and `to` is 'destination dbname'. `'*': true` means all database to same database name.
-options.syncIndex | hash | `create: boolean, drop: boolean`| Sync or not `createIndex` and `dropIndex`. `{create: false, drop: false}` is default.
-options.syncCommand | hash | `command: boolean` | `*` means all command.
-options.bulkIntervalMS | integer | | 1000 is default.
-options.bulkLimit | integer | | 5000 is default.
+| field | type | format | |
+|---|---|---|---|
+|type|string| `standalone` `replset` `mongos` `standalone` is default.|
+|hosts | string array | `hostname`:`port` | Required when type is not `standalone`.|
+|host | string  | | Required when type is `standalone`.|
+|port | integer | | Required when type is `standalone`.|
+|authdbname | string  | | |
+|user | string  | | |
+|password | string  | | |
+|options.loglv | string | `debug` `trace` `verbose` `info` `error` | `info` is default. |
+|options.targetDB | hash | `from`: `to` | Required. `from` is source dbname and `to` is 'destination dbname'. `'*': true` means all database to same database name. |
+|options.syncIndex | hash | `create: boolean, drop: boolean`| Sync or not `createIndex` and `dropIndex`. `{create: false, drop: false}` is default.|
+|options.syncCommand | hash | `command: boolean` | `*` means all command.|
+|options.bulkIntervalMS | integer | | 1000 is default.|
+|options.bulkLimit | integer | | 5000 is default.|
