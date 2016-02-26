@@ -210,22 +210,14 @@ Confirm sync process terminal
 ```
 
 ## Config field
-#### name: (string)
-The source ReplSet ID. Must be unique at multiple source replication.
+| field | type | format | |
+|---|---|---|---|
+|name|string| | The source ReplSet ID. Must be unique at multiple source replication. |
+|src|hash| mongo-info | Source MongoDB cluster. Must specify `replset: true` |
+|dst|hash| mongo-info | Destination MongoDB cluster. Specify the collection by `database` and `collection` field. `node-mongosync` save a oplog Timestamp that already reflected for restart process. `database: 'mongosync', collection: 'last'` is default.|
+|options| hash | options | |
 
-#### src: (mongo-info)
-Source MongoDB cluster.
-Must specify `replset: true`
-
-#### dst: (mongo-info)
-Destination MongoDB cluster.
-
-Specify the collection by `database` and `collection` field.
-`node-mongosync` save a oplog Timestamp that already reflected for restart process.
-
-`database: 'mongosync', collection: 'last'` is default.
-
-#### mongo-info type
+#### mongo-info
 | field | type | format | |
 |---|---|---|---|
 |type|string| `standalone` `replset` `mongos` `standalone` is default.|
@@ -235,9 +227,13 @@ Specify the collection by `database` and `collection` field.
 |authdbname | string  | | |
 |user | string  | | |
 |password | string  | | |
-|options.loglv | string | `debug` `trace` `verbose` `info` `error` | `info` is default. |
-|options.targetDB | hash | `from`: `to` | Required. `from` is source dbname and `to` is 'destination dbname'. `'*': true` means all database to same database name. |
-|options.syncIndex | hash | `create: boolean, drop: boolean`| Sync or not `createIndex` and `dropIndex`. `{create: false, drop: false}` is default.|
-|options.syncCommand | hash | `command: boolean` | `*` means all command.|
-|options.bulkIntervalMS | integer | | 1000 is default.|
-|options.bulkLimit | integer | | 5000 is default.|
+
+#### options
+| field | type | format | |
+|---|---|---|---|
+|loglv | string | `debug` `trace` `verbose` `info` `error` | `info` is default. |
+|targetDB | hash | `from`: `to` | Required. `from` is source dbname and `to` is 'destination dbname'. `'*': true` means all database to same database name. |
+|syncIndex | hash | `create: boolean, drop: boolean`| Sync or not `createIndex` and `dropIndex`. `{create: false, drop: false}` is default.|
+|syncCommand | hash | `command: boolean` | `*` means all command.|
+|bulkIntervalMS | integer | | 1000 is default.|
+|bulkLimit | integer | | 5000 is default.|
