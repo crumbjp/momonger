@@ -207,7 +207,7 @@ class Mongosync
 
       op.U++
       @logger.error 'unknown op', oplog
-      return done null
+      throw Error 'unknown op'
 
   runCommand: (ns, oplog, done) ->
     mongo = Mongo.getByNS @config.dst, ns
