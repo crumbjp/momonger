@@ -4,6 +4,9 @@ _ = require 'underscore'
 Mongo = require './mongo'
 Logger = require './logger'
 
+DEFAULT_BULK_INTERVAL_MS = 1000
+DEFAULT_BULK_LIMIT = 5000
+DEFAULT_OPLOG_CURSOR_TIMEOUT = 60000
 class Mongosync
   constructor: (@config) ->
     @logger = new Logger @config.options.loglv
@@ -33,8 +36,9 @@ class Mongosync
     @config.options.targetDB ||= {'*': true}
     @config.options.syncCommand ||= {}
     @config.options.syncIndex ||= {}
-    @config.options.bulkIntervalMS ||= 1000
-    @config.options.bulkLimit ||= 5000
+    @config.options.bulkIntervalMS ||= DEFAULT_BULK_INTERVAL_MS
+    @config.options.bulkLimit ||= DEFAULT_BULK_LIMIT
+    @config.options.oplogCursorTimeout ||= DEFAULT_OPLOG_CURSOR_TIMEOUT
 
   init: (done) ->
     @opByNs = {}
@@ -93,7 +97,10 @@ class Mongosync
       timeout: false
       batchSize: (@config.options.bulkLimit * 2)
     , (err, cursor) =>
-      done err, cursor
+      return done err if err
+      # TODO: how to set noCursorTimeout ?
+      cursor.addCursorFlag 'noCursorTimeout', true
+      done null, cursor
 
   parseNS: (ns) ->
     ns_split  = ns.split('\.')
@@ -155,7 +162,6 @@ class Mongosync
       u: 0
       d: 0
       m: 0
-      U: 0
     }
     op = @opByNs[ns]
     # Skip migrate operation
@@ -205,7 +211,6 @@ class Mongosync
           op.bulk.find(oplog.o).removeOne()
           return done null, oplog
 
-      op.U++
       @logger.error 'unknown op', oplog
       throw Error 'unknown op'
 
@@ -255,7 +260,7 @@ class Mongosync
     # Reflect
     async.each _.keys(opByNs), (ns, done) =>
       op = opByNs[ns]
-      @logger.verbose "#{ns}: i:#{op.i}, u:#{op.u}, d:#{op.d}, m: #{op.m}, U: #{op.U}"
+      @logger.verbose "#{ns}: i:#{op.i}, u:#{op.u}, d:#{op.d}, m: #{op.m}"
       return done null if @config.options.dryrun
       op.bulk.execute done
     , (err) =>
@@ -291,22 +296,49 @@ class Mongosync
 
 
   sync: (done) ->
+    doneCalled = false
     @dstMongoByNs = {}
     @opQuery @lastTimestamp, (err, cursor) =>
+      done err if err
       @stream = cursor.stream()
+      # Sometime tailable cursor freeze with no data, no close
+      @syncTimestamp = null
+      clearInterval @interval if @interval
+      @interval = setInterval =>
+        if @syncTimestamp
+          now = Date.now()
+          if (now - @syncTimestamp) > @config.options.oplogCursorTimeout
+            @logger.error 'Cursor broken ?'
+            clearInterval @interval
+            @interval = null
+            if @stream
+              @stream.close()
+              @stream = null
+            unless doneCalled
+              doneCalled = true
+              done null
+      , 1000
+
       @stream.on 'data', (oplog) =>
+        @syncTimestamp = Date.now()
         @stream.pause()
         @applyOplog oplog, false, (err, pendedLog) =>
           @pendedLogs.push pendedLog if pendedLog
           if @pendedLogs.length >= @config.options.bulkLimit
             @stream.resume() unless @replicating
+            @syncTimestamp = null
             @replication =>
+              @syncTimestamp = Date.now()
               @stream.resume()
           else
             @stream.resume()
-      @stream.on 'end', (err) =>
-        @logger.info 'Cursor closed', err
-        done err
+      @stream.on 'end', () =>
+        unless doneCalled
+          @logger.error 'Cursor closed'
+          clearInterval @interval
+          @interval = null
+          doneCalled = true
+          done null
 
   start: (done) ->
     @logger.verbose 'start', @config
