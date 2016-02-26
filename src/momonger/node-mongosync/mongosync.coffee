@@ -42,7 +42,6 @@ class Mongosync
     @lastMongo = new Mongo @lastConfig
     @replicateCallbacks = []
     @replicating = false
-    @repairMode = false # TODO:
     @pendedLogs = []
     async.during (done) =>
       setTimeout =>
@@ -111,27 +110,12 @@ class Mongosync
     return ns if @config.options.targetDB['*']
     null
 
-  getOp: (ns, done) ->
-    return done null, @opByNs[ns] if @opByNs[ns]
-    mongo = Mongo.getByNS @config.dst, ns
-    mongo._col (err, col) =>
-      return done err if err
-      op = {
-        i: 0
-        u: 0
-        d: 0
-        m: 0
-        U: 0
-      }
-      if @repairMode
-        op.mongo = mongo
-      else
-        op.bulk = col.initializeOrderedBulkOp()
-        @opByNs[ns] = op
+  getDstMongo: (ns) ->
+    return @dstMongoByNs[ns] if @dstMongoByNs[ns]
+    @dstMongoByNs[ns] = Mongo.getByNS @config.dst, ns
+    @dstMongoByNs[ns]
 
-      done null, op
-
-  applyOplog: (oplog, done) =>
+  applyOplog: (oplog, repairMode, done) =>
     @logger.debug 'applyOplog', oplog
     convertedNS = @convertDB oplog.ns
     return done null unless convertedNS
@@ -165,53 +149,65 @@ class Mongosync
       @replication =>
         return @runCommand ns, oplog, (err) => done err
       return
-    @getOp ns, (err, op) =>
+
+    @opByNs[ns] ||= {
+      i: 0
+      u: 0
+      d: 0
+      m: 0
+      U: 0
+    }
+    op = @opByNs[ns]
+    # Skip migrate operation
+    if oplog.fromMigrate
+      op.m++
+      return done null
+
+    mongo = @getDstMongo ns
+    mongo._col (err, col) =>
       return done err if err
-      bulk = op.bulk
-      mongo = op.mongo
-      if oplog.fromMigrate
-        # Skip sync
-        op.m++
-        return done null
-      else if  oplog.op == 'i'
+      op.bulk ||= col.initializeOrderedBulkOp() unless repairMode
+      # Insert
+      if  oplog.op == 'i'
         op.i++
-        if bulk
+        if repairMode
+          return mongo.insert oplog.o, (err) =>
+            return done null if err and err.code = 11000 # Squash duplicate key error
+            done err
+        else
           #  There is a possibility of the duplicate key error.
           #  However, cannot do bellows
           #    bulk.find(_id: oplog.o._id).upsert().updateOne(oplog.o)
           #  due to considering sharded cluster... (must contain shard-key in `find`)
-          bulk.insert oplog.o
+          op.bulk.insert oplog.o
           return done null, oplog
-        else
-          return mongo.insert oplog.o, (err) =>
-            return done null if err and err.code = 11000 # Squash duplicate key error
-            done err
-      else if  oplog.op == 'u'
+      # Update
+      if  oplog.op == 'u'
         op.u++
         if oplog.b
-          if bulk
-            bulk.find(oplog.o2).upsert().updateOne(oplog.o)
-            return done null, oplog
-          else
+          if repairMode
             return mongo.update oplog.o2, oplog.o, {upsert: true}, (err) => done err
-        else
-          if bulk
-            bulk.find(oplog.o2).updateOne(oplog.o)
-            return done null, oplog
           else
-            return mongo.update oplog.o2, oplog.o, {}, (err) => done err
-      else if  oplog.op == 'd'
-        op.d++
-        if bulk
-          bulk.find(oplog.o).removeOne()
-          return done null, oplog
+            op.bulk.find(oplog.o2).upsert().updateOne(oplog.o)
+            return done null, oplog
         else
+          if repairMode
+            return mongo.update oplog.o2, oplog.o, {}, (err) => done err
+          else
+            op.bulk.find(oplog.o2).updateOne(oplog.o)
+            return done null, oplog
+      # Delete
+      if  oplog.op == 'd'
+        op.d++
+        if repairMode
           return mongo.removeOne oplog.o, (err) => done err
-      else
-        op.U++
-        @logger.error 'unknown op', oplog
-        return done null
-      throw Error 'Bug... applyOplog'
+        else
+          op.bulk.find(oplog.o).removeOne()
+          return done null, oplog
+
+      op.U++
+      @logger.error 'unknown op', oplog
+      return done null
 
   runCommand: (ns, oplog, done) ->
     mongo = Mongo.getByNS @config.dst, ns
@@ -246,7 +242,7 @@ class Mongosync
     last = @pendedLogs[@pendedLogs.length-1].ts
     @replicating = true
     now = Math.floor(Date.now() / 1000)
-    @logger.info "replication: (#{last.high_},#{last.low_}): delay: #{now - last.high_} op: #{@pendedLogs.length}, repair: #{@repairMode}"
+    @logger.info "replication: (#{last.high_},#{last.low_}): delay: #{now - last.high_} op: #{@pendedLogs.length}"
     # Flip buffers
     @replicateCallbacks.push done
     callbacks = @replicateCallbacks
@@ -259,7 +255,7 @@ class Mongosync
     # Reflect
     async.each _.keys(opByNs), (ns, done) =>
       op = opByNs[ns]
-      @logger.verbose "#{ns}: i:#{op.i}, u:#{op.u}, d:#{op.d}, U: #{op.U}"
+      @logger.verbose "#{ns}: i:#{op.i}, u:#{op.u}, d:#{op.d}, m: #{op.m}, U: #{op.U}"
       return done null if @config.options.dryrun
       op.bulk.execute done
     , (err) =>
@@ -270,7 +266,6 @@ class Mongosync
             done null
           , =>
             @replicating = false
-            @repairMode = false
             if _.isEmpty @opByNs
               setTimeout =>
                 @replication =>
@@ -278,11 +273,10 @@ class Mongosync
 
       if err
         @logger.error '@replication error', err
-        if !@repairMode and err.code == 11000 # E11000 duplicate key error
-          @repairMode = true
+        if err.code == 11000 # E11000 duplicate key error
           @logger.info 'Try to repair: logs:', pendedLogs.length
           async.eachSeries pendedLogs, (oplog, done) =>
-            @applyOplog oplog, done
+            @applyOplog oplog, true, done
           , (err) =>
             if err
               @logger.error 'Repair error', err
@@ -297,11 +291,12 @@ class Mongosync
 
 
   sync: (done) ->
+    @dstMongoByNs = {}
     @opQuery @lastTimestamp, (err, cursor) =>
       @stream = cursor.stream()
       @stream.on 'data', (oplog) =>
         @stream.pause()
-        @applyOplog oplog, (err, pendedLog) =>
+        @applyOplog oplog, false, (err, pendedLog) =>
           @pendedLogs.push pendedLog if pendedLog
           if @pendedLogs.length >= @config.options.bulkLimit
             @stream.resume() unless @replicating
