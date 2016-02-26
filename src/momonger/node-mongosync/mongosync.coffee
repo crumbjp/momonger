@@ -38,7 +38,6 @@ class Mongosync
 
   init: (done) ->
     @opByNs = {}
-    @logCount = 0
     @oplogMongo = new Mongo @oplogConfig
     @lastMongo = new Mongo @lastConfig
     @replicateCallbacks = []
@@ -113,7 +112,6 @@ class Mongosync
     null
 
   getOp: (ns, done) ->
-    @logCount++
     return done null, @opByNs[ns] if @opByNs[ns]
     mongo = Mongo.getByNS @config.dst, ns
     mongo._col (err, col) =>
@@ -238,15 +236,17 @@ class Mongosync
       @saveLastTimestamp oplog.ts, done
 
   replication: (done) ->
-    @logger.trace "replication(): replicating: #{@replicating}, numCallbacks: #{@replicateCallbacks.length}, opByNs: #{_.isEmpty(@opByNs)}"
+    @logger.trace "replication(): replicating: #{@replicating}, numCallbacks: #{@replicateCallbacks.length}, opByNs: #{_.isEmpty(@opByNs)}, logs: #{@pendedLogs.length}"
     if @replicating
       @replicateCallbacks.push done
       return
-    return done null if _.isEmpty @opByNs
+    # _.isEmpty @opByNs don't work correctly.
+    # Beause, @opByNs is created but empty when all operation is fromMigrate.
+    return done null unless @pendedLogs.length
     last = @pendedLogs[@pendedLogs.length-1].ts
     @replicating = true
     now = Math.floor(Date.now() / 1000)
-    @logger.info "replication: (#{last.high_},#{last.low_}): delay: #{now - last.high_} op: #{@logCount}, repair: #{@repairMode}"
+    @logger.info "replication: (#{last.high_},#{last.low_}): delay: #{now - last.high_} op: #{@pendedLogs.length}, repair: #{@repairMode}"
     # Flip buffers
     @replicateCallbacks.push done
     callbacks = @replicateCallbacks
@@ -255,7 +255,6 @@ class Mongosync
     @opByNs = {}
     pendedLogs = @pendedLogs
     @pendedLogs = []
-    @logCount = 0
 
     # Reflect
     async.each _.keys(opByNs), (ns, done) =>
@@ -304,7 +303,7 @@ class Mongosync
         @stream.pause()
         @applyOplog oplog, (err, pendedLog) =>
           @pendedLogs.push pendedLog if pendedLog
-          if @logCount >= @config.options.bulkLimit
+          if @pendedLogs.length >= @config.options.bulkLimit
             @stream.resume() unless @replicating
             @replication =>
               @stream.resume()
