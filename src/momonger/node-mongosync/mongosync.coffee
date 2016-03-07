@@ -262,6 +262,7 @@ class Mongosync
       op = opByNs[ns]
       @logger.verbose "#{ns}: i:#{op.i}, u:#{op.u}, d:#{op.d}, m: #{op.m}"
       return done null if @config.options.dryrun
+      return done null unless op.bulk
       op.bulk.execute done
     , (err) =>
       finish = =>
