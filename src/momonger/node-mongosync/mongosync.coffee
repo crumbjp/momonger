@@ -42,22 +42,22 @@ class Mongosync
       return
     done null
 
-  getTailTimestamp: (done) ->
+  getTailTS: (done) ->
     @oplogReader.getTailTS (err, last) =>
       return done err if err
-      @lastTimestamp = last.ts
-      done null, @lastTimestamp
+      @lastTS = last.ts
+      done null, @lastTS
 
-  getLastTimestamp: (done) ->
+  getLastTS: (done) ->
     if @config.options.force_tail
-      return @getTailTimestamp done
+      return @getTailTS done
     @logger.verbose 'Get lastTS: ', {_id: @config.name}
     @lastMongo ||= new Mongo @lastConfig
     @lastMongo.findOne {_id: @config.name}, (err, last) =>
       return done err if err
-      return @getTailTimestamp done unless last
-      @lastTimestamp = last.ts
-      done null, @lastTimestamp
+      return @getTailTS done unless last
+      @lastTS = last.ts
+      done null, @lastTS
 
   saveLastTimestamp: (last, done) ->
     return done null if @config.options.dryrun
@@ -268,7 +268,7 @@ class Mongosync
     bulkCallback = (oplogs, done)=>
       @replication done
 
-    @oplogReader.start @lastTimestamp, eachCallback, bulkCallback, done
+    @oplogReader.start @lastTS, eachCallback, bulkCallback, done
 
   start: (done) ->
     @logger.verbose 'start', @config
@@ -276,7 +276,7 @@ class Mongosync
       async.during (done) =>
         done null, true
       , (done) =>
-        @getLastTimestamp (err) =>
+        @getLastTS (err) =>
           return done err if err
           @sync done
       , (err) =>

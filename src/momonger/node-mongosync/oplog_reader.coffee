@@ -17,6 +17,8 @@ class OplogReader
       collection: 'oplog.rs'
     }
     @oplogs = []
+    @config.options.bulkLimit ||= DEFAULT_BULK_LIMIT
+    @config.options.oplogCursorTimeout ||= DEFAULT_OPLOG_CURSOR_TIMEOUT
 
   checkConfig: ->
     # Validate
@@ -28,8 +30,6 @@ class OplogReader
       error = true
       @logger.error 'Config error: `src.type` must be `replset`'
     throw Error 'Config error' if error
-    @config.options.bulkLimit ||= DEFAULT_BULK_LIMIT
-    @config.options.oplogCursorTimeout ||= DEFAULT_OPLOG_CURSOR_TIMEOUT
 
   init: ->
     @oplogMongo = new Mongo @oplogConfig
