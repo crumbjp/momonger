@@ -3,15 +3,19 @@ async = require 'async'
 _ = require 'underscore'
 Mongo = require './mongo'
 Logger = require './logger'
+OplogReader = require './oplog_reader'
 
 DEFAULT_BULK_INTERVAL_MS = 1000
-DEFAULT_BULK_LIMIT = 5000
-DEFAULT_OPLOG_CURSOR_TIMEOUT = 60000
 class Mongosync
   constructor: (@config) ->
     @logger = new Logger @config.options.loglv
 
-    @checkConfig()
+    @oplogReader = new OplogReader @config
+
+    @config.options.targetDB ||= {'*': true}
+    @config.options.syncCommand ||= {}
+    @config.options.syncIndex ||= {}
+    @config.options.bulkIntervalMS ||= DEFAULT_BULK_INTERVAL_MS
 
     @oplogConfig = _.extend {}, @config.src, {
       database: 'local'
@@ -22,31 +26,12 @@ class Mongosync
       collection: 'last'
     }, @config.dst
 
-  checkConfig: ->
-    # Validate
-    error = false
-    unless @config.name
-      error = true
-      @logger.error 'Config error: `name` is required'
-    unless @config.src.type == 'replset'
-      error = true
-      @logger.error 'Config error: `src.type` must be `replset`'
-    throw Error 'Config error' if error
-
-    @config.options.targetDB ||= {'*': true}
-    @config.options.syncCommand ||= {}
-    @config.options.syncIndex ||= {}
-    @config.options.bulkIntervalMS ||= DEFAULT_BULK_INTERVAL_MS
-    @config.options.bulkLimit ||= DEFAULT_BULK_LIMIT
-    @config.options.oplogCursorTimeout ||= DEFAULT_OPLOG_CURSOR_TIMEOUT
-
   init: (done) ->
     @opByNs = {}
-    @oplogMongo = new Mongo @oplogConfig
-    @lastMongo = new Mongo @lastConfig
+    @oplogReader.init()
+
     @replicateCallbacks = []
     @replicating = false
-    @pendedLogs = []
     async.during (done) =>
       setTimeout =>
         done null, true
@@ -58,7 +43,7 @@ class Mongosync
     done null
 
   getTailTimestamp: (done) ->
-    @oplogMongo.findOne {}, {sort: {$natural:-1}}, (err, last) =>
+    @oplogReader.getTailTS (err, last) =>
       return done err if err
       @lastTimestamp = last.ts
       done null, @lastTimestamp
@@ -67,6 +52,7 @@ class Mongosync
     if @config.options.force_tail
       return @getTailTimestamp done
     @logger.verbose 'Get lastTS: ', {_id: @config.name}
+    @lastMongo ||= new Mongo @lastConfig
     @lastMongo.findOne {_id: @config.name}, (err, last) =>
       return done err if err
       return @getTailTimestamp done unless last
@@ -83,24 +69,6 @@ class Mongosync
     ,
       upsert: true
     , done
-
-  opQuery: (ts, done) ->
-    query =
-      ts:
-        $gt: ts
-    @logger.info 'OpLog query: ', query
-    @oplogMongo.find query,
-      sort:
-        $natural: 1
-      tailable: true
-      awaitdata: true
-      timeout: false
-      batchSize: (@config.options.bulkLimit * 2)
-    , (err, cursor) =>
-      return done err if err
-      # TODO: how to set noCursorTimeout ?
-      cursor.addCursorFlag 'noCursorTimeout', true
-      done null, cursor
 
   parseNS: (ns) ->
     ns_split  = ns.split('\.')
@@ -215,15 +183,14 @@ class Mongosync
       throw Error 'unknown op'
 
   runCommand: (ns, oplog, done) ->
+    @logger.info 'command', oplog.o
+    return done null if @config.options.dryrun
     mongo = Mongo.getByNS @config.dst, ns
     mongo.init (err, db) =>
       return done err if err
-      @logger.info 'command', oplog.o
-      return done null if @config.options.dryrun
       db.command oplog.o, (err) =>
         return done err if err
         @saveLastTimestamp oplog.ts, done
-
 
   createIndex: (ns, oplog, done) ->
     key = oplog.o.key
@@ -237,25 +204,22 @@ class Mongosync
       @saveLastTimestamp oplog.ts, done
 
   replication: (done) ->
-    @logger.trace "replication(): replicating: #{@replicating}, numCallbacks: #{@replicateCallbacks.length}, opByNs: #{_.isEmpty(@opByNs)}, logs: #{@pendedLogs.length}"
+    @logger.trace "replication(): replicating: #{@replicating}, numCallbacks: #{@replicateCallbacks.length}, opByNs: #{_.isEmpty(@opByNs)}, logs: #{@oplogReader.length()}"
     if @replicating
       @replicateCallbacks.push done
       return
-    # _.isEmpty @opByNs don't work correctly.
-    # Beause, @opByNs is created but empty when all operation is fromMigrate.
-    return done null unless @pendedLogs.length
-    last = @pendedLogs[@pendedLogs.length-1].ts
+    return done null unless @oplogReader.length()
     @replicating = true
+    last = @oplogReader.lastLog()
     now = Math.floor(Date.now() / 1000)
-    @logger.info "replication: (#{last.high_},#{last.low_}): delay: #{now - last.high_} op: #{@pendedLogs.length}"
+    @logger.info "replication: (#{last.high_},#{last.low_}): delay: #{now - last.high_} op: #{@oplogReader.length()}"
     # Flip buffers
     @replicateCallbacks.push done
     callbacks = @replicateCallbacks
     @replicateCallbacks = []
     opByNs = @opByNs
     @opByNs = {}
-    pendedLogs = @pendedLogs
-    @pendedLogs = []
+    oplogs = @oplogReader.clearLogs()
 
     # Reflect
     async.each _.keys(opByNs), (ns, done) =>
@@ -280,8 +244,8 @@ class Mongosync
       if err
         @logger.error '@replication error', err
         if err.code == 11000 # E11000 duplicate key error
-          @logger.info 'Try to repair: logs:', pendedLogs.length
-          async.eachSeries pendedLogs, (oplog, done) =>
+          @logger.info 'Try to repair: logs:', oplogs.length
+          async.eachSeries oplogs, (oplog, done) =>
             @applyOplog oplog, true, done
           , (err) =>
             if err
@@ -292,54 +256,19 @@ class Mongosync
         else
           # Should die immediately !!
           throw Error '@replication error'
-
       finish()
 
-
   sync: (done) ->
-    doneCalled = false
     @dstMongoByNs = {}
-    @opQuery @lastTimestamp, (err, cursor) =>
-      done err if err
-      @stream = cursor.stream()
-      # Sometime tailable cursor freeze with no data, no close
-      @syncTimestamp = null
-      clearInterval @interval if @interval
-      @interval = setInterval =>
-        if @syncTimestamp
-          now = Date.now()
-          if (now - @syncTimestamp) > @config.options.oplogCursorTimeout
-            @logger.error 'Cursor broken ?'
-            clearInterval @interval
-            @interval = null
-            if @stream
-              @stream.close()
-              @stream = null
-            unless doneCalled
-              doneCalled = true
-              done null
-      , 1000
+    eachCallback = (oplog, done)=>
+      @applyOplog oplog, false, (err, filteredLog) =>
+        @oplogReader.resume() unless @replicating
+        done err, filteredLog
 
-      @stream.on 'data', (oplog) =>
-        @syncTimestamp = Date.now()
-        @stream.pause()
-        @applyOplog oplog, false, (err, pendedLog) =>
-          @pendedLogs.push pendedLog if pendedLog
-          if @pendedLogs.length >= @config.options.bulkLimit
-            @stream.resume() unless @replicating
-            @syncTimestamp = null
-            @replication =>
-              @syncTimestamp = Date.now()
-              @stream.resume()
-          else
-            @stream.resume()
-      @stream.on 'end', () =>
-        unless doneCalled
-          @logger.error 'Cursor closed'
-          clearInterval @interval
-          @interval = null
-          doneCalled = true
-          done null
+    bulkCallback = (oplogs, done)=>
+      @replication done
+
+    @oplogReader.start @lastTimestamp, eachCallback, bulkCallback, done
 
   start: (done) ->
     @logger.verbose 'start', @config
