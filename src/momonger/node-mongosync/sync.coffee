@@ -6,7 +6,7 @@ Logger = require './logger'
 OplogReader = require './oplog_reader'
 
 DEFAULT_BULK_INTERVAL_MS = 1000
-class Mongosync
+class Sync
   constructor: (@config) ->
     @logger = new Logger @config.options.loglv
 
@@ -282,4 +282,4 @@ class Mongosync
       , (err) =>
         @logger.error 'error', err
 
-module.exports = Mongosync
+module.exports = Sync

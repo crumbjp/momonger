@@ -27,13 +27,20 @@ opts.parse [
   description : 'debug/verbose/info/error'
   value       : true
   required    : false
+,
+  short       : 'v'
+  long        : 'view-mode'
+  description : '--view-mode=`interval sec` Only view oplog summary. Do not connect to destination.'
+  value       : true
+  required    : false
 ]
 configPath = opts.get('config')
 force_tail = opts.get('force-tail')
 dryrun = opts.get('dry-run')
 loglv = opts.get('loglv')
+view_mode = opts.get('view-mode')
 
-Mongosync = require './mongosync'
+Sync = require './sync'
 Config = require './config'
 config = Config.load configPath
 
@@ -41,7 +48,14 @@ config.options.force_tail = force_tail unless _.isUndefined force_tail
 config.options.dryrun = dryrun unless _.isUndefined dryrun
 config.options.loglv = loglv unless _.isUndefined loglv
 
-sync = new Mongosync config
+if view_mode
+  OpViewer = require './op_viewer'
+  config.options.view_interval = parseInt(view_mode)
+  opViewer = new OpViewer config
+  opViewer.start()
+  return
+
+sync = new Sync config
 sync.start (err)->
   if err
     console.log err
