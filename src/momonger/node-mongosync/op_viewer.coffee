@@ -16,7 +16,9 @@ class OpViewer
       throw err if err
       @opsByNs = {}
       @all = 0
+      @firstLog = false
       eachCallback = (oplog, done) =>
+        @firstLog = true
         @opsByNs[oplog.ns] ||= {
           m: 0
           c: 0
@@ -41,6 +43,9 @@ class OpViewer
 
       bulkCallback = (oplogs, done) -> done null
       setInterval =>
+        unless @firstLog
+          @logger.info 'Waiting for moving cursor to tail'
+          return
         time = new Date().toISOString()
         @logger.info "#{time}: ALL: #{@all}"
         for ns, ops of @opsByNs

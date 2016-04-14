@@ -1,7 +1,7 @@
 {
   "name": "node-mongosync",
   "description": "Alpha version",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "hiroaki.kubota@mail.crumb.jp",
   "dependencies": {
     "async": "^1.5.0",

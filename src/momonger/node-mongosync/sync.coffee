@@ -29,7 +29,7 @@ class Sync
   init: (done) ->
     @opByNs = {}
     @oplogReader.init()
-
+    @lastMongo = new Mongo @lastConfig
     @replicateCallbacks = []
     @replicating = false
     async.during (done) =>
@@ -52,7 +52,6 @@ class Sync
     if @config.options.force_tail
       return @getTailTS done
     @logger.verbose 'Get lastTS: ', {_id: @config.name}
-    @lastMongo ||= new Mongo @lastConfig
     @lastMongo.findOne {_id: @config.name}, (err, last) =>
       return done err if err
       return @getTailTS done unless last
