@@ -38,13 +38,13 @@ class OplogReader
     @oplogMongo.findOne {}, {sort: {$natural:-1}}, done
 
   getCursor: (ts, done) ->
-    query =
-      ts:
-        $gt: ts
+    query = {}
+    if ts
+      query
+        ts:
+          $gt: ts
     @logger.info 'OpLog query: ', query
     @oplogMongo.find query,
-      sort:
-        $natural: 1
       tailable: true
       awaitdata: true
       timeout: false

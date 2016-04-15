@@ -6,7 +6,7 @@ class OpViewer
   constructor: (@config) ->
     @logger = new Logger @config.options.loglv
 
-    @config.options.bulkLimit = 1
+    @config.options.bulkLimit = 100000
     @oplogReader = new OplogReader @config
 
   start: ->
