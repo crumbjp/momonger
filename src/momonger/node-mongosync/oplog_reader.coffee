@@ -40,7 +40,7 @@ class OplogReader
   getCursor: (ts, done) ->
     query = {}
     if ts
-      query
+      query =
         ts:
           $gt: ts
     @logger.info 'OpLog query: ', query
