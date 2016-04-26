@@ -4,7 +4,8 @@ _ = require 'underscore'
 Mongo = require './mongo'
 Logger = require './logger'
 
-DEFAULT_BULK_LIMIT = 5000
+DEFAULT_BULK_LIMIT = 2000
+DEFAULT_BULK_INTERVAL = 1000
 DEFAULT_OPLOG_CURSOR_TIMEOUT = 60000
 class OplogReader
   constructor: (@config) ->
@@ -18,7 +19,7 @@ class OplogReader
     }
     @oplogs = []
     @config.options.bulkLimit ||= DEFAULT_BULK_LIMIT
-    @config.options.oplogCursorTimeout ||= DEFAULT_OPLOG_CURSOR_TIMEOUT
+    @config.options.bulkInterval ||= DEFAULT_BULK_INTERVAL
 
   checkConfig: ->
     # Validate
@@ -37,23 +38,61 @@ class OplogReader
   getTailTS: (done) ->
     @oplogMongo.findOne {}, {sort: {$natural:-1}}, done
 
-  getCursor: (ts, done) ->
-    query = {}
+  getQuery: (ts, done) ->
     if ts
-      query =
+      return done null, {
         ts:
           $gt: ts
-    @logger.info 'OpLog query: ', query
-    @oplogMongo.find query,
-      tailable: true
-      awaitdata: true
-      timeout: false
-      batchSize: (@config.options.bulkLimit * 2)
+      }
+    @getTailTS (err, oplog)->
+      done null, {
+        ts:
+          $gt: oplog.ts
+      }
+
+  getCursor: (ts, done) ->
+    @getQuery ts, (err, query)=>
+      @lastTS = query.ts.$gt
+      @logger.info 'OpLog query: ', query
+      @oplogMongo.find query,
+        sort:
+          $natural: 1
+        tailable: true
+        awaitdata: true
+        timeout: false
+        # batchSize: (@config.options.bulkLimit * 2)
+      , (err, cursor) =>
+        return done err if err
+        # TODO: how to set noCursorTimeout ?
+        cursor.addCursorFlag 'noCursorTimeout', true
+        done null, cursor
+
+  getTailOplogs: (ts, done) ->
+    @logger.info 'getTailOplogs: ', ts
+    @oplogMongo.find {},
+      sort:
+        $natural: -1
+      # batchSize: @config.options.bulkLimit
     , (err, cursor) =>
       return done err if err
-      # TODO: how to set noCursorTimeout ?
-      cursor.addCursorFlag 'noCursorTimeout', true
-      done null, cursor
+      oplogs = []
+      tailStream = cursor.stream()
+      closed = false
+      tailStream.on 'data', (oplog)=>
+        return if closed
+        if oplog and oplog.ts > ts
+          oplogs.push oplog
+          return
+        closed = true
+        # console.log '## CLOSE', ts
+        tailStream.close()
+
+      tailStream.on 'end', (oplog)=>
+        @lastTS = oplogs[0].ts if oplogs.length
+        done null, oplogs.reverse()
+
+      tailStream.on 'error', (err)=>
+        console.log '##### cursor error', err
 
   clearLogs: ->
     logs = @oplogs
@@ -61,10 +100,12 @@ class OplogReader
     logs
 
   resume: ->
-    @stream.resume() if @stream
+    if @stream and @stream.connection and @stream.isPaused()
+      @stream.resume()
 
   pause: ->
-    @stream.pause() if @stream
+    if @stream and @stream.connection
+      @stream.pause()
 
   close: ->
     @stream.close() if @stream
@@ -73,10 +114,24 @@ class OplogReader
   length: ->
     @oplogs.length
 
-  lastLog: ->
-    @oplogs[@oplogs.length-1].ts
+  processBulk: (bulkCallback, done) ->
+    bulkCallback @oplogs, (err) =>
+      if err
+        @logger.error 'Error: bulkCallback', err
+      @clearLogs()
+      @resume()
+      done? err
 
   start: (ts, eachCallback, bulkCallback, done) ->
+    @run ts, eachCallback, bulkCallback, (err) ->
+      clearInterval @tailOplogInterval
+      @tailOplogInterval = null
+      clearInterval @bulkInterval
+      @bulkInterval = null
+      @close()
+      done err
+
+  run: (ts, eachCallback, bulkCallback, done) ->
     doneCalled = false
     @clearLogs()
 
@@ -85,23 +140,67 @@ class OplogReader
       @stream = cursor.stream()
       # Sometime tailable cursor freeze with no data, no close
       @lastDataTime = null
-      clearInterval @interval if @interval
-      @interval = setInterval =>
+      @lastBulkCallbackTime = null
+
+      # Until getting first data by tailable-cursor
+      clearInterval @tailOplogInterval if @tailOplogInterval
+      @tailOplogInterval = setInterval =>
+        if @tailOplogIntervalProcessing
+          @logger.error 'Delay tailOplogInterval'
+          return
+        @tailOplogIntervalProcessing = true
         if @lastDataTime
-          now = Date.now()
-          if (now - @lastDataTime) > @config.options.oplogCursorTimeout
-            @logger.error 'Cursor broken ?'
-            clearInterval @interval
-            @interval = null
-            @close()
-            unless doneCalled # To care 'end' event
-              doneCalled = true
+          clearInterval @tailOplogInterval
+          return
+        @pause()
+        @getTailOplogs @lastTS, (err, oplogs) =>
+          if err
+            @logger.error 'Error: getTailOplogs', err
+            @resume()
+            return done err
+          async.eachSeries oplogs, (oplog, done) =>
+            eachCallback oplog, (err, filteredLog) =>
+              return done err if err
+              @oplogs.push filteredLog if filteredLog
               done null
+          , (err) =>
+            if err
+              @logger.error 'Error: eachSeries', err
+            @resume()
+            @tailOplogIntervalProcessing = false
       , 1000
+      # Bulk interval
+      clearInterval @bulkInterval if @bulkInterval
+      @bulkIntervalProcessing = false
+      @bulkInterval = setInterval =>
+        if @bulkIntervalProcessing
+          @logger.error 'Delay bulkInterval'
+          return
+        @bulkIntervalProcessing = true
+        now = Date.now()
+        if @lastDataTime and (now - @lastDataTime) > @config.options.oplogCursorTimeout
+          @logger.error 'Cursor broken ?'
+          @close()
+          unless doneCalled # To care 'end' event
+            doneCalled = true
+            done null
+          return
+
+        if @oplogs.length and (!@lastBulkCallbackTime or (now - @lastBulkCallbackTime) >= @config.options.bulkInterval or @oplogs.length >= @config.options.bulkLimit)
+          @lastBulkCallbackTime = now
+          @pause()
+          @processBulk bulkCallback, (err) =>
+            @bulkIntervalProcessing = false
+        else
+          @bulkIntervalProcessing = false
+      , (@config.options.bulkInterval / 10)
 
       @stream.on 'data', (oplog) =>
         @lastDataTime = Date.now()
+        return if @lastTS >= oplog.ts
+        @lastTS = oplog.ts
         @pause()
+
         eachCallback oplog, (err, filteredLog) =>
           if err
             @logger.error 'Error: eachCallback', err
@@ -109,23 +208,24 @@ class OplogReader
             return
           @oplogs.push filteredLog if filteredLog
           if @oplogs.length >= @config.options.bulkLimit
+            @lastBulkCallbackTime = @lastDataTime
             bulkCallback @oplogs, (err) =>
               if err
                 @logger.error 'Error: bulkCallback', err
               @clearLogs()
               @resume()
               return
-          @resume()
+          else
+            @resume()
 
       @stream.on 'end', () =>
         unless doneCalled
           @logger.error 'Cursor closed'
-          clearInterval @interval
-          @interval = null
           doneCalled = true
           @close()
           done null
 
-
+      @stream.on 'error', () =>
+        console.log 'stream error'
 
 module.exports = OplogReader

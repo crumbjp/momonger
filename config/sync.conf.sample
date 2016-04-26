@@ -30,7 +30,7 @@
       '*': false,
       drop: true,
     },
-    bulkIntervalMS: 1000,
+    bulkInterval: 1000,
     bulkLimit: 5000,
   }
 }

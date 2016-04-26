@@ -235,5 +235,5 @@ Confirm sync process terminal
 |targetDB | hash | `from`: `to` | Required. `from` is source dbname and `to` is 'destination dbname'. `'*': true` means all database to same database name. |
 |syncIndex | hash | `create: boolean, drop: boolean`| Sync or not `createIndex` and `dropIndex`. `{create: false, drop: false}` is default.|
 |syncCommand | hash | `command: boolean` | `*` means all command.|
-|bulkIntervalMS | integer | | 1000 is default.|
+|bulkInterval | integer | | 1000 is default.|
 |bulkLimit | integer | | 5000 is default.|

@@ -5,7 +5,6 @@ Mongo = require './mongo'
 Logger = require './logger'
 OplogReader = require './oplog_reader'
 
-DEFAULT_BULK_INTERVAL_MS = 1000
 class Sync
   constructor: (@config) ->
     @logger = new Logger @config.options.loglv
@@ -15,7 +14,6 @@ class Sync
     @config.options.targetDB ||= {'*': true}
     @config.options.syncCommand ||= {}
     @config.options.syncIndex ||= {}
-    @config.options.bulkIntervalMS ||= DEFAULT_BULK_INTERVAL_MS
 
     @oplogConfig = _.extend {}, @config.src, {
       database: 'local'
@@ -32,14 +30,6 @@ class Sync
     @lastMongo = new Mongo @lastConfig
     @replicateCallbacks = []
     @replicating = false
-    async.during (done) =>
-      setTimeout =>
-        done null, true
-      , @config.options.bulkIntervalMS
-    , (done) =>
-      @replication done
-    , (err) =>
-      return
     done null
 
   getTailTS: (done) ->
@@ -209,9 +199,7 @@ class Sync
       return
     return done null unless @oplogReader.length()
     @replicating = true
-    last = @oplogReader.lastLog()
     now = Math.floor(Date.now() / 1000)
-    @logger.info "replication: (#{last.high_},#{last.low_}): delay: #{now - last.high_} op: #{@oplogReader.length()}"
     # Flip buffers
     @replicateCallbacks.push done
     callbacks = @replicateCallbacks
@@ -219,6 +207,8 @@ class Sync
     opByNs = @opByNs
     @opByNs = {}
     oplogs = @oplogReader.clearLogs()
+    last = oplogs[oplogs.length-1].ts
+    @logger.info "replication: (#{last.high_},#{last.low_}): delay: #{now - last.high_} op: #{oplogs.length}"
 
     # Reflect
     async.each _.keys(opByNs), (ns, done) =>
