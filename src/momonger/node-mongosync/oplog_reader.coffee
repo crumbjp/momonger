@@ -100,7 +100,7 @@ class OplogReader
     logs
 
   resume: ->
-    if @stream and @stream.connection and @stream.isPaused()
+    if @stream and @stream.connection
       @stream.resume()
 
   pause: ->
