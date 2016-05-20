@@ -1,7 +1,7 @@
 'use strict'
 _ = require 'underscore'
 async = require 'async'
-{JobControl, Job, MapJob, Mapper, Worker} = require 'momonger/core'
+{JobControl, Job, MapJob, Mapper, Worker} = require 'momonger/job'
 {addVector, divVector, multiVector, diffVector, diffAngle} = require 'momonger/common'
 
 

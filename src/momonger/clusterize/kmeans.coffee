@@ -2,7 +2,7 @@
 _ = require 'underscore'
 async = require 'async'
 Mongo = require 'momonger/mongo'
-{JobControl, Job, MapJob, Mapper, Worker} = require 'momonger/core'
+{JobControl, Job, MapJob, Mapper, Worker} = require 'momonger/job'
 {addVector, divVector, multiVector, diffVector, diffAngle, normalVector} = require 'momonger/common'
 
 class Kmeans extends Job

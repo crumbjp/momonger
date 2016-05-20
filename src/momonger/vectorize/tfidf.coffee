@@ -2,7 +2,7 @@
 _ = require 'underscore'
 async = require 'async'
 Mongo = require 'momonger/mongo'
-{JobControl, Job, MapJob, Mapper} = require 'momonger/core'
+{JobControl, Job, MapJob, Mapper} = require 'momonger/job'
 {normalVector} = require 'momonger/common'
 
 class Tfidf extends MapJob

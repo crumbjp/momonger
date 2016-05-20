@@ -1,7 +1,7 @@
 'use strict'
 _ = require 'underscore'
 async = require 'async'
-{JobControl, Job, MapJob, Mapper} = require 'momonger/core'
+{JobControl, Job, MapJob, Mapper} = require 'momonger/job'
 
 class Df extends MapJob
   beforeFirstMap: (done)->

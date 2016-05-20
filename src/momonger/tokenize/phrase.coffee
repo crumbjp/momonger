@@ -3,7 +3,7 @@ _ = require 'underscore'
 async = require 'async'
 Config = require 'momonger/config'
 Mongo = require 'momonger/mongo'
-{JobControl, Job, MapJob, Mapper} = require 'momonger/core'
+{JobControl, Job, MapJob, Mapper} = require 'momonger/job'
 
 class Phrase extends Job
   beforeRun: (done)->

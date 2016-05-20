@@ -8,6 +8,7 @@ DEFAULT_BULK_LIMIT = 2000
 DEFAULT_BULK_INTERVAL = 1000
 DEFAULT_OPLOG_CURSOR_TIMEOUT = 60000
 class OplogReader
+  BULK_UNLIMITED = -1
   constructor: (@config) ->
     @logger = new Logger @config.options.loglv
 
@@ -186,13 +187,16 @@ class OplogReader
             done null
           return
 
-        if @oplogs.length and (!@lastBulkCallbackTime or (now - @lastBulkCallbackTime) >= @config.options.bulkInterval or @oplogs.length >= @config.options.bulkLimit)
-          @lastBulkCallbackTime = now
-          @pause()
-          @processBulk bulkCallback, (err) =>
-            @bulkIntervalProcessing = false
-        else
-          @bulkIntervalProcessing = false
+        @bulkIntervalProcessing = false
+        if @oplogs.length
+          if !@lastBulkCallbackTime or
+            (now - @lastBulkCallbackTime) >= @config.options.bulkInterval or
+            @config.options.bulkLimit != OplogReader.BULK_UNLIMITED and @oplogs.length >= @config.options.bulkLimit
+            @bulkIntervalProcessing = true
+            @lastBulkCallbackTime = now
+            @pause()
+            @processBulk bulkCallback, (err) =>
+              @bulkIntervalProcessing = false
       , (@config.options.bulkInterval / 10)
 
       @stream.on 'data', (oplog) =>
@@ -207,14 +211,9 @@ class OplogReader
             @resume()
             return
           @oplogs.push filteredLog if filteredLog
-          if @oplogs.length >= @config.options.bulkLimit
+          if @config.options.bulkLimit != OplogReader.BULK_UNLIMITED and @oplogs.length >= @config.options.bulkLimit
             @lastBulkCallbackTime = @lastDataTime
-            bulkCallback @oplogs, (err) =>
-              if err
-                @logger.error 'Error: bulkCallback', err
-              @clearLogs()
-              @resume()
-              return
+            @processBulk bulkCallback
           else
             @resume()
 
