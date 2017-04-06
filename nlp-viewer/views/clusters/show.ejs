@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><a href="/clusters/<%= name %>"><%= name %></a></h1>
+
+    <%- render_partial('clusters/cluster', {render_partial: render_partial, meta: meta, name: name, cluster: cluster, val: '', dictionary: dictionary}) %>
+    <h3>Documents</h3>
+    <table>
+      <tr>
+        <th>id</th>
+        <th style="text-align: center;">cluster ( weight )</th>
+        <th></th>
+      </tr>
+      <tr>
+        <td colspan="3" style="white-space: normal; text-align: left; border-bottom: 1px solid black;">
+      </tr>
+      <% for (var i in documents) { var document = documents[i]; %>
+      <tr>
+        <td style="text-align: left;"><a href="/documents/<%= meta.kmeans.data %>/show/?id=<%= _id_link(document._id) %>"><%= document._id %></a></td>
+        <td style="text-align: left;"><ul>
+        <% for (var j in document.cs) { var c = document.cs[j]; %>
+          <ol><a href="/clusters/<%= name %>/<%= c.c %>"><%= c.c %></a> ( <%= c.s %> ) </ol>
+        <% } %>
+        </ul></td>
+        <td style="text-align: right;">
+        <%- render_partial('clusters/loc', {render_partial: render_partial, name: name, meta: meta, loc: document.loc, dictionary: dictionary}) %>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="white-space: normal; text-align: left; border-bottom: 1px solid black;">
+          <%= document.doc  %>
+        </td>
+      </tr>
+      <% } %>
+     </table>
+  </body>
+</html>

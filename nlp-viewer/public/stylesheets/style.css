@@ -1,0 +1,102 @@
+body {
+	width: 1400px;
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  /* background-image: url('/images/bg.png'); */
+	/* background-repeat-y: no-repeat; */
+	/* background-color: #201000; */
+  color: #222222;
+}
+
+h1 {
+  color: #000000;
+}
+
+h3 {
+	margin-top: 20px;
+	margin-bottom: 5px;
+  text-decoration: underline;
+	font-style: italic;
+}
+ul {
+    padding: 0;
+    margin: 0;
+}
+ol {
+    padding: 0;
+    margin: 0;
+}
+a {
+  color: #00b7ff;
+  text-decoration: none;
+}
+
+img {
+	width: 150px;
+}
+
+table {
+	border-collapse: separate;
+	border-spacing: 1px;
+	border-color: gray;
+}
+
+table td.important {
+	color: #006060;
+}
+
+table tr.section td,
+table tr.section th {
+  /* border-top: 1px solid #888888; */
+	  padding-left: 5px;
+}
+
+table th:first-child {
+	text-align: left;
+  /* border-right: 1px solid #888888; */
+}
+
+table th,
+table td {
+	vertical-align: top;
+  white-space: nowrap;
+}
+
+table th {
+	text-align: right;
+	padding-left: 20px;
+	padding-right: 10px;
+}
+
+table td {
+  font-weight: 200;
+	vertical-align: top;
+	padding-left: 10px;
+	text-align: right;
+}
+
+table th.name {
+	width: 200px;
+}
+table th.entire {
+	width: 180px;
+}
+table th.segment {
+	width: 180px;
+}
+table th.campaign {
+	width: 180px;
+}
+table th.conversion {
+	width: 180px;
+}
+table th.interest_count {
+	width: 180px;
+}
+table td.interest_count {
+	width: 80px;
+}
+
+input[type="text"] {
+	width: 300px;
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h3><%= search %> ( <%= words.length %> ) </h3>
+
+    <table>
+      <tr>
+        <th>_id</th>
+        <th>word</th>
+        <th>type</th>
+        <th>boost</th>
+      </tr>
+      <% for (var i in words) { var word = words[i]; %>
+      <tr>
+        <th><%= word._id %></th>
+        <td><%= word.w %></td>
+        <td><%= word.t.join(', ') %></td>
+        <td><%= word.i %></td>
+      </tr>
+      <% } %>
+    </table>
+  </body>
+</html>

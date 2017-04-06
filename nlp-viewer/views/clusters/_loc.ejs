@@ -1,0 +1,17 @@
+<table>
+  <tr>
+    <th></th>
+    <th></th>
+    <th>idf</th>
+  </tr>
+  <% for (var l in loc) { var ll = loc[l]; %>
+  <tr>
+    <td><a href="/dictionaries/<%= meta.dic %>/<%= dictionary[ll.id].w %>"><%= dictionary[ll.id].w %></a></td>
+<!--
+    <td><%= ll.id %></td>
+-->
+    <td style="text-align: left;"><%= ll.score %></td>
+    <td style="text-align: left;"><a href="/idfs/<%= meta.idf %>/<%= dictionary[ll.id].w %>"><%= dictionary[ll.id].idf %></a></td>
+  </tr>
+  <% } %>
+</table>

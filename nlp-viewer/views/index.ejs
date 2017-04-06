@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <form id="name_search" action="">
+      <table>
+        <tr>
+          <td>name:</th>
+          <td>
+            <input name="name" type="text" placeholder="momongertest.sampledoc" value="<%= name %>"></input>
+          </td>
+          <td>
+            <input type="submit" value="検索"></input>
+          </td>
+        </tr>
+      </table>
+    </form>
+    <% if(name) { %>
+      <% include index_contents %>
+    <% } %>
+  </body>
+</html>
