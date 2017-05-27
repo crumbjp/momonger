@@ -34,7 +34,7 @@ $(function(){
   });
   $('button.put_phrase').click(function(e){
     var button = $(this);
-    $.get('?new_word='+button.val(), function(body, result){
+    $.get('/phrases/<%= name %>?new_word='+button.val(), function(body, result){
       if ( result === 'success' ) {
         button.closest('tr').remove();
       }
@@ -42,7 +42,7 @@ $(function(){
   });
   $('button.del_phrase').click(function(e){
     var button = $(this);
-    $.get('?del_word='+button.val(), function(body, result){
+    $.get('/phrases/<%= name %>?del_word='+button.val(), function(body, result){
       if ( result === 'success' ) {
         button.closest('tr').remove();
       }
