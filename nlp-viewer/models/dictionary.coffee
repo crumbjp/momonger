@@ -21,14 +21,13 @@ class Dictionary extends Mongo
     , done
 
   put: (word, t, done)->
-    t ||= ['名詞', '一般', 'PHRASE']
     rec =
       $setOnInsert:
         w: word
         l: word.length
         s: 300
         c: 3000
-        t: t
+        t: _.chain(['名詞', '一般'].concat(t)).compact().values()
         f: {}
         h: word[0..(@meta.nheads-1)]
     @update
