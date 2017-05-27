@@ -16,8 +16,10 @@ class Dictionary extends Mongo
       done err
 
   search: (search, done)->
+    console.log search
     @findAsArray
-      w: RegExp "^#{search.split(',')[0]}"
+      w:
+        $regex: search
     , done
 
   put: (word, t, done)->
