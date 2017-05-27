@@ -8,13 +8,17 @@ router.get '/', (req, res)->
     words: []
 
 router.get '/update', (req, res)->
-  sy = req.query.sy.split(' ')
   dictionary = new Dictionary()
-  dictionary.updateById req.query.update_dic, {$set: {sy: sy}}, (err)->
-    res.status 200
-    res.render 'success'
-    for s in sy
-      dictionary.put s, null, ()->
+  if req.query.update_sy
+    sy = req.query.val.split(' ')
+    dictionary.updateById req.query.update_sy, {$set: {sy: sy}}, (err)->
+      for s in sy
+        dictionary.put s, null, ()->
+  if req.query.update_boost
+    i = req.query.val
+    dictionary.updateById req.query.update_boost, {$set: {i: i}}, (err)->
+  res.status 200
+  res.render 'success'
 
 router.get '/:search', (req, res)->
   search = req.params.search

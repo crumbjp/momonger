@@ -22,11 +22,15 @@
       <th><%= word._id %></th>
       <td><%= word.w %></td>
       <td><%= word.t.join(', ') %></td>
-      <td><%= word.i %></td>
+      <td class="input">
+        <span><%= word.i %></span>
+        <input type="number" name="i" value="<%= word.i %>"/>
+        <button class="update" op="update_boost" value="<%= word._id %>">boost 更新</button>
+      </td>
       <td class="input">
         <span><%= (word.sy||[]).join(' ') %></span>
-        <input type="text" name="i" value="<%= (word.sy||[]).join(' ') %>"/>
-        <button class="update" op="update_dic" value="<%= word._id %>">synonym 更新</button>
+        <input type="text" name="sy" value="<%= (word.sy||[]).join(' ') %>"/>
+        <button class="update" op="update_sy" value="<%= word._id %>">synonym 更新</button>
       </td>
       <td></td>
     </tr>
@@ -44,8 +48,8 @@ $(function(){
   });
   $('button.update').click(function(e){
     var button = $(this);
-    var input = button.closest('tr').find('input[name="i"]');
-    $.get('/dictionaries/update?'+button.attr('op')+'='+button.val()+ '&sy=' + input.val(), function(body, result){
+    var input = button.closest('.input').find('input');
+    $.get('/dictionaries/update?'+button.attr('op')+'='+button.val()+ '&val=' + input.val(), function(body, result){
     if ( result === 'success' ) {
         var val = input.val();
         var td = input.closest('td');
