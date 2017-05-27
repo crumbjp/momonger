@@ -42,7 +42,7 @@ normalize = opts.get('normalize') || false
 async   = require 'async'
 Config = require 'momonger/config'
 Mongo = require 'momonger/mongo'
-{JobControl} = require 'momonger/core'
+{JobControl} = require 'momonger/job'
 {Tfidf} = require 'momonger/vectorize'
 
 momonger = Config.load configPath

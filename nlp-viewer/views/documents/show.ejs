@@ -19,8 +19,7 @@
 
     <h1>Clusters</h1>
     <% for (var i in document.cs) { var c = document.cs[i]; %>
-      <%- render_partial('clusters/cluster', {render_partial: render_partial, name: name, meta: meta, name: meta.kmeans.cluster, cluster: c.cluster, val: c.s, dictionary: dictionary}) %>
+      <%- render_partial('clusters/cluster', {render_partial: render_partial, name: name, meta: meta, name: meta.kmeans.cluster, cluster: c, val: c.s, dictionary: dictionary}) %>
     <% } %>
-
   </body>
 </html>

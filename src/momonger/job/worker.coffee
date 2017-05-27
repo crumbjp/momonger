@@ -15,7 +15,7 @@ exports.start = (config)->
       empty = false
       jobControl.get (err, implData)->
         if err
-          console.err "Error fetching job", err
+          console.log "Error fetching job", err
           finish = err
           return done err
         unless implData

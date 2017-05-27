@@ -34,7 +34,7 @@ n = opts.get('n-gram') || 4
 
 async   = require 'async'
 Config = require 'momonger/config'
-{JobControl} = require 'momonger/core'
+{JobControl} = require 'momonger/job'
 {Phrase} = require 'momonger/tokenize'
 
 options = {

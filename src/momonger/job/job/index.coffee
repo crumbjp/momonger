@@ -101,7 +101,12 @@ class Mapper extends Job
     , (err, elements)=>
       return done err if err
       if @options.map
-        async.each elements, @map, done
+        async.eachLimit elements, 10, (element, done) =>
+          @map element, (err) =>
+            setTimeout =>
+              done(err)
+            , 0
+        , done
       else if @options.reduce
         for element in elements
           typeVal = toTypeValue element.id
@@ -113,13 +118,18 @@ class Mapper extends Job
         done 'Unknown map OP'
 
   _reduceEmitBuffer: (done) ->
-    async.each _.values(@emitDataById), (emitData, done)=>
-      return done null if emitData.values.length <= 1
+    async.eachLimit _.values(@emitDataById), 10, (emitData, done)=>
+      if emitData.values.length <= 1
+        return setTimeout =>
+          done(null)
+        , 0
       @reduce emitData.id, emitData.values, (err, value) =>
         return done err if err
         typeVal = toTypeValue emitData.id
         @emitDataById[typeVal].values = [value]
-        done null
+        setTimeout =>
+          done(null)
+        , 0
     , done
 
   _saveEmitBuffer: (done) ->

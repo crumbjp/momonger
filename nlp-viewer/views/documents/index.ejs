@@ -11,11 +11,7 @@
 	<script><!--
 $(function(){
   $('#search').click(function(e){
-    new_location = location.href;
-    if ( location.href[location.href.length-1] !== '/' ) {
-      new_location += '/'
-    }
-    new_location += 'search/' + $('#word').val();
+    new_location = '/documents/<%= name %>/search/' + $('#word').val();
     location.href = new_location;
   });
 });

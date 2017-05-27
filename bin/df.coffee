@@ -27,7 +27,7 @@ configPath = opts.get('config') || 'config/momonger.conf'
 
 async   = require 'async'
 Config = require 'momonger/config'
-{JobControl} = require 'momonger/core'
+{JobControl} = require 'momonger/job'
 {Df} = require 'momonger/vectorize'
 
 options = {

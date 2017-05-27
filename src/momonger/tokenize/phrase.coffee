@@ -7,7 +7,11 @@ Mongo = require 'momonger/mongo'
 
 class Phrase extends Job
   beforeRun: (done)->
-    @_dropDestination done
+    async.series [
+      (done) => @_dropDestination done
+      (done) => @dstMongo.createIndex {n: 1}, {w: 1, j: 1, wtimeout: 3600000}, done
+      (done) => @dstMongo.createIndex {ws: 1}, {w: 1, j: 1, wtimeout: 3600000}, done
+    ], done
 
   run: (done)->
     class PhraseCandidate extends Job
@@ -59,10 +63,13 @@ class Phrase extends Job
         @updatePhraseById = {}
         current = []
         @getSource (err, words)=>
+          return done err if err
           @getElement words, (err, elements) =>
+            return done err if err
             elementById = _.indexBy elements, '_id'
             for word in words
               word.dic = elementById[word.c]
+
               if (_.intersection word.dic.t, ['記号','NUMBER','EN','外来','DATE']).length
                 current = []
                 continue
@@ -151,10 +158,6 @@ class Phrase extends Job
         (done) =>
           async.eachSeries jobids, (jobid, done)=>
             @jobcontrol.wait jobid, done
-          , done
-        (done) =>
-          @dstMongo.createIndex
-            n: 1
           , done
         (done) =>
           async.eachSeries [@options.n..2], (n, done) =>

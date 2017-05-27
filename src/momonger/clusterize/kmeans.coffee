@@ -107,18 +107,17 @@ class Kmeans extends Job
             clusterScores = []
             sum = 0
             for cluster in @clusters
-              tmp = @diffFunc cluster.v, doc.v
-              sum += tmp
+              s = @diffFunc cluster.v, doc.v
+              sum += 1.0 - s
               clusterScores.push
                 _id: cluster._id
-                s: tmp
+                s: s
 
-              if min == null or min > tmp
-                min = tmp
+              if min == null or min > s
+                min = s
                 id = cluster._id
-
             for clusterScore in clusterScores
-              clusterScore.s = 1 - clusterScore.s / sum
+              clusterScore.s = (1 - clusterScore.s) / sum
             clusterScores.sort (a, b)-> b.s - a.s
 
             @results.push {
@@ -129,8 +128,11 @@ class Kmeans extends Job
             done null
 
           afterRun: (done)->
-            @results.push @meta
             @dstMongo.bulkInsert @results, done
+      afterRun: (done)->
+        @clusterMongo = Mongo.getByNS @config, @options.cluster
+        @clusterMongo.getmeta (err, @meta)=>
+          @dstMongo.insert @meta, done
 
     @meta.kmeans =
       iterate: 0
@@ -165,7 +167,8 @@ class Kmeans extends Job
         @currentDstMongo.insert @meta, (err)=>
           return done err if err
           return done null, false if @meta.kmeans.iterate >= @options.iterate
-          if prevDistance and ((@meta.kmeans.distance - prevDistance) / @meta.kmeans.distance) < 0.01
+          console.log "DISTANCE: #{prevDistance} => #{@meta.kmeans.distance}"
+          if prevDistance and ((prevDistance - @meta.kmeans.distance) / @meta.kmeans.distance) < 0.01
             # Finish when affect score is less than 1%
             return done null, false
           done null, true

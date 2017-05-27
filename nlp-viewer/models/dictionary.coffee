@@ -21,14 +21,16 @@ class Dictionary extends Mongo
     , done
 
   put: (word, t, done)->
+    t ||= ['名詞', '一般', 'PHRASE']
     rec =
-      w: word
-      l: word.length
-      s: 300
-      c: 3000
-      t: ['名詞', '一般', 'PHRASE']
-      f: {}
-      h: word[0..(@meta.nhead-1)]
+      $setOnInsert:
+        w: word
+        l: word.length
+        s: 300
+        c: 3000
+        t: t
+        f: {}
+        h: word[0..(@meta.nheads-1)]
     @update
       w: word
     ,

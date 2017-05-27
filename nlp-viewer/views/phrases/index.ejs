@@ -6,6 +6,9 @@
   <body>
     <h1><a href="/phrases/<%= name %>"><%= name %></a></h1>
 
+    <input id="word" type="text"></input>
+    <button id="search">検索</button>
+
     <table>
       <tr>
         <th></th>
@@ -25,6 +28,10 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 	<script><!--
 $(function(){
+  $('#search').click(function(e){
+    new_location = '/phrases/<%= name %>/' + $('#word').val();
+    location.href = new_location;
+  });
   $('button.put_phrase').click(function(e){
     var button = $(this);
     $.get('?new_word='+button.val(), function(body, result){

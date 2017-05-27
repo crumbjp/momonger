@@ -49,7 +49,7 @@ threshold = parseInt(opts.get('threshold')) || 1
 async   = require 'async'
 Config = require 'momonger/config'
 Mongo = require 'momonger/mongo'
-{JobControl} = require 'momonger/core'
+{JobControl} = require 'momonger/job'
 {Canopy} = require 'momonger/clusterize'
 
 options = {

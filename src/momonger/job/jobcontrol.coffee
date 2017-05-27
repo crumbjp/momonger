@@ -69,6 +69,12 @@ class JobControl
         _id: jobid
         status:
           $in: ['done', 'error']
+      ,
+        w: 1
+        j: 1
+        writeConcern: 1
+        maxTimeMS: 3600000
+        wtimeout: 3600000
       , (err, result)->
         if err
           finish = true

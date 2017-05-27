@@ -31,7 +31,7 @@ class Mongo
       db = dbByKey[key]
       return
     if config.authdbname
-      db = new mongodb.Db config.authdbname, @topology(config), safe: true
+      db = new mongodb.Db config.authdbname, @topology(config), safe: true, w: 1, j: 1
       db.open (err)->
         throw Error err if err
         db.authenticate config.user, config.password, (err)=>
@@ -40,7 +40,7 @@ class Mongo
           db.opened = true
           dbByKey[key] = db
     else
-      db = new mongodb.Db config.database, @topology(config), safe: true
+      db = new mongodb.Db config.database, @topology(config), safe: true, w: 1, j: 1
       db.open (err)->
         throw Error err if err
         db.opened = true
@@ -79,8 +79,7 @@ class Mongo
   getmeta: (done)->
     @findOne
       _id : '.meta'
-    , (err, meta) =>
-      @meta = meta
+    , (err, @meta) =>
       done err, @meta
 
   initialized: (done)->
@@ -113,8 +112,7 @@ class Mongo
       async.eachSeries docs, (doc, done)=>
         bulk = col.initializeUnorderedBulkOp() unless bulk
         bulk.insert(doc)
-        # TODO: if bulk.length < 1000
-        if bulk.length < 3
+        if bulk.length < 1000
           return done null
         bulk.execute (err, result) ->
           bulk = null
@@ -125,21 +123,32 @@ class Mongo
 
   bulkUpdate: (updates, done) ->
     @_col (err, col)=>
-      bulk = null
       async.eachSeries updates, (update, done)=>
-        bulk = col.initializeUnorderedBulkOp() unless bulk
-        bulkOp = bulk.find update[0]
-        bulkOp = bulkOp.upsert() unless update[2]
-        bulkOp.updateOne(update[1])
-        # TODO: if bulk.length < 1000
-        if bulk.length < 3
-          return done null
-        bulk.execute (err, result) ->
-          bulk = null
-          done err
+        async.retry
+          times: 5
+          interval: 0
+        , (done) =>
+          options = {}
+          options.upsert = true unless update[2]
+          col.update update[0], update[1], options, done
+        , done
       , (err)->
-        return done err unless bulk
-        bulk.execute done
+        return done err
+      # TODO: https://jira.mongodb.org/browse/SERVER-14322
+      # bulk = null
+      # async.eachSeries updates, (update, done)=>
+      #   bulk = col.initializeUnorderedBulkOp() unless bulk
+      #   bulkOp = bulk.find update[0]
+      #   bulkOp = bulkOp.upsert() unless update[2]
+      #   bulkOp.updateOne(update[1])
+      #   if bulk.length < 1000
+      #     return done null
+      #   bulk.execute {w: 1, j: 1, wtimeout: 3600000}, (err, result) ->
+      #     bulk = null
+      #     done err
+      # , (err)->
+      #   return done err unless bulk
+      #   bulk.execute {w: 1, j: 1, wtimeout: 3600000}, done
 
   createIndex: (args...)->
     @_col (err, col) ->
@@ -188,23 +197,31 @@ class Mongo
       col.rename args...
 
   @inBatch: (cursor, batchSize, formatter, callback, done) ->
-    # Silly event design... 'end' events will occur regardless of calling stream.pause()
-    # So cannot use 'end'
-    cursor.count (err, all) ->
-      return done err if err
-      return done null unless all
-      count = 0
-      stream = cursor.stream()
-      elements = []
-      stream.on 'data', (data)->
-        elements.push formatter data
-        count++
-        if elements.length >= batchSize or all == count
-          stream.pause()
-          callback elements, (err)->
-            elements = []
-            stream.resume()
-            done null if all == count
+    stream = cursor.stream()
+    ended = false
+    calling = false
+    elements = []
+    stream.on 'data', (data)->
+      stream.pause()
+      elements.push formatter data
+      if elements.length >= batchSize
+        callbackElements = elements
+        elements = []
+        calling = true
+        callback callbackElements, (err)->
+          calling = false
+          done err if err
+          return done null if ended
+          stream.resume()
+      else
+        stream.resume()
+    stream.on 'end', ()->
+      ended = true;
+      return if calling
+      if elements.length > 0
+        return callback elements, done
+      else
+        return done null
 
   term: (done)->
     Mongo.term @key

@@ -42,7 +42,7 @@ iterate = parseFloat(opts.get('iterate')) || 100
 async   = require 'async'
 Config = require 'momonger/config'
 Mongo = require 'momonger/mongo'
-{JobControl} = require 'momonger/core'
+{JobControl} = require 'momonger/job'
 {Kmeans} = require 'momonger/clusterize'
 
 options = {

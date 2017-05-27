@@ -48,7 +48,7 @@ filterNoise = opts.get 'filter-noise'
 
 async   = require 'async'
 Config = require 'momonger/config'
-{JobControl} = require 'momonger/core'
+{JobControl} = require 'momonger/job'
 {Idf} = require 'momonger/vectorize'
 
 options = {

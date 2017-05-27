@@ -29,6 +29,7 @@ ol {
 a {
   color: #00b7ff;
   text-decoration: none;
+  line-height: 1em;
 }
 
 img {
@@ -37,7 +38,7 @@ img {
 
 table {
 	border-collapse: separate;
-	border-spacing: 1px;
+	border-spacing: 0;
 	border-color: gray;
 }
 
@@ -60,6 +61,8 @@ table th,
 table td {
 	vertical-align: top;
   white-space: nowrap;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 table th {
@@ -99,4 +102,14 @@ table td.interest_count {
 
 input[type="text"] {
 	width: 300px;
+}
+
+td.input input, td.input button {
+  display: none;
+}
+td.input.edit input, td.input.edit button {
+  display: inline-block;
+}
+td.input.edit span {
+  display: none;
 }

@@ -11,7 +11,7 @@ if ( typeof utils === 'undefined' ) {
       }
       return true;
     }
-  }
+  };
 }
 
 var morpho = {

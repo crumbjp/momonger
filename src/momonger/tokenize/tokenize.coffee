@@ -29,8 +29,12 @@ class Tokenize extends MapJob
 
         jptokenizer.init (err) =>
           return done err if err
-          jptokenizer.parse_doc doc[@options.field], (err, tokens)=>
+          data = ''
+          for field in @options.fields
+            data += doc[field] + ' '
+          jptokenizer.parse_doc data, (err, tokens)=>
             return done err if err
+            synonyms = []
             results = []
             for token in tokens
               results.push {
@@ -41,8 +45,31 @@ class Tokenize extends MapJob
                 c: token.c
                 a: @options.append
               }
-
+              if token.sy
+                Array.prototype.push.apply synonyms, token.sy
             async.series [
+              (done) =>
+                return done null if synonyms.length == 0
+                dic_by_w = {}
+                async.eachSeries _.uniq(synonyms), (synonym, done) =>
+                  jptokenizer.dictionary.findBest synonym, (err, word) =>
+                    dic_by_w[synonym] = word
+                    done null
+                , (err) =>
+                  cur_i = _.last(tokens).i
+                  for synonym in synonyms
+                    dic = dic_by_w[synonym]
+                    if dic
+                      cur_i++
+                      results.push {
+                        d: doc._id
+                        i: cur_i
+                        p: -1
+                        w: dic.w
+                        c: dic._id
+                        a: @options.append
+                      }
+                  done err
               (done) =>
                 return done null unless @options.append?
                 @dstMongo.remove {d: doc._id}, done
@@ -61,6 +88,11 @@ class Tokenize extends MapJob
           _id: '.meta'
           num: value.value
         }
+  beforeFirstMap: (done) ->
+    async.parallel [
+      (done) => @dstMongo.createIndex {d: 1, i: 1}, {w: 1, j: 1, wtimeout: 3600000}, done
+      (done) => @dstMongo.createIndex {a: 1}, {w: 1, j: 1, wtimeout: 3600000}, done
+    ], done
 
   afterRun: (done)->
     JPTokenizer = require 'momonger/node-jptokenizer'
@@ -68,13 +100,9 @@ class Tokenize extends MapJob
     meta =
       docs: @options.src
       token: @options.dst
-      field: @options.field
+      fields: @options.fields
       dictionary: @options.dictionary
-    async.parallel [
-      (done) => @dstMongo.createIndex {d: 1, i: 1}, done
-      (done) => @dstMongo.createIndex {a: 1}, done
-      (done) => @dstMongo.update {_id: '.meta'}, {$set: meta}, {upsert: false}, done
-    ], (err) ->
+    @dstMongo.update {_id: '.meta'}, {$set: meta}, {upsert: false}, (err) ->
       done err, meta
 
 module.exports = Tokenize

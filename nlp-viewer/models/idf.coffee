@@ -17,7 +17,7 @@ class Idf extends Base
     query._id = {$ne: '.meta'}
     @find query, (err, cursor)=>
       return done err if err
-      cursor.sort({i: -1}).limit(1000).toArray (err, idfs)=>
+      cursor.sort({value: -1}).limit(1000).toArray (err, idfs)=>
         ids = []
         for idf in idfs
           ids.push idf._id

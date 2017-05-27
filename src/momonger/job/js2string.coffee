@@ -25,7 +25,7 @@ DEFAULT_PROPERTIES = [
 ]
 class Js2String
   constructor: (@js)->
-    @random = Math.random() * 10000000000000000000
+    @random = Math.floor(Math.random() * 100000000000000000000)
     @functionByName = {}
     @objects = []
     @strObjects = "var objects#{@random} = {}\n"

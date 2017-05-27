@@ -21,4 +21,15 @@ router.get '/:name', (req, res)->
             name: name
             phrases: phrases
 
+router.get '/:name/:search', (req, res)->
+  name = req.params.name
+  search = req.params.search
+  phrase = new Phrase name
+  phrase.init (err)->
+    phrase.search search, (err, phrases, dictionary)->
+      res.render 'phrases/index',
+        name: name
+        search: search
+        phrases: phrases
+
 module.exports = router;

@@ -1,4 +1,3 @@
-#!/usr/bin/env coffee
 'use strict'
 opts   = require 'opts'
 cluster = require 'cluster'
@@ -20,7 +19,7 @@ opts.parse [
 configPath = opts.get('config') || 'config/momonger.conf'
 jobs = parseInt(opts.get('jobs')) || 10
 Config = require 'momonger/config'
-{Worker} = require 'momonger/core'
+{Worker} = require 'momonger/job'
 
 momonger = Config.load configPath
 

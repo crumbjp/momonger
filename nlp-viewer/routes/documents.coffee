@@ -14,7 +14,7 @@ router.get '/:name/search/:search', (req, res)->
   search = req.params.search
   data = new Data name
   data.init (err)->
-    data.find search, (err, documents)->
+    data.search search, (err, documents)->
       res.render 'documents/list',
         meta: data.meta
         name: name

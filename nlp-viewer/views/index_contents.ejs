@@ -1,11 +1,13 @@
 <h1><%= name %></h1>
 <ul>
-	<li><a href="/clusters/<%= name %>.kmeans.cluster">クラスター</a></li>
-	<li><a href="/documents/<%= name %>.kmeans.data">ドキュメント</a></li>
-	<li><a href="/idfs/<%= name %>.idf">IDF</a></li>
+  <% if (meta) { %>
+    <% if (meta.kmeans) { %>
+      <li><a href="/clusters/<%= meta.kmeans.cluster %>">クラスター</a></li>
+      <li><a href="/documents/<%= meta.kmeans.data %>">ドキュメント</a></li>
+    <% } %>
+    <% if (meta.idf) { %>
+      <li><a href="/idfs/<%= meta.idf %>">IDF</a></li>
+    <% } %>
+  <% } %>
 	<li><a href="/phrases/<%= name %>.phrase">熟語抽出</a></li>
-</ul>
-<h1>Dictionary</h1>
-<ul>
-	<li><a href="/dictionaries/">辞書</a></li>
 </ul>

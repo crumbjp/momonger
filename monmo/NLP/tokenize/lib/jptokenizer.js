@@ -1,10 +1,10 @@
 var mongoAsync = {
   during: function(test, fn, callback){
     for(;;){
-      var continued = null
+      var continued = null;
       test(function(e, c){
         continued = c;
-      })
+      });
       if ( !continued ) {
         return callback();
       }
@@ -18,7 +18,7 @@ var mongoAsync = {
     }
   },
   eachSeries: function(arr, iterator, callback){
-    var results = []
+    var results = [];
     for ( var i in arr) {
       var err = 'no callback eachSeries';
       iterator(arr[i], function(e, result){
@@ -32,13 +32,13 @@ var mongoAsync = {
     return callback(err, results);
   },
   series: function(tasks, callback){
-    var results = []
+    var results = [];
     for ( var i in tasks){
       var task = tasks[i];
       var err = 'no callback series';
       task(function(e, result){
         err = e;
-        results.push(result)
+        results.push(result);
       });
       if ( err ) {
         return callback(err, results);
@@ -49,12 +49,12 @@ var mongoAsync = {
 }
 
 function array_in(arr, elem) {
-  return (arr.indexOf(elem) >= 0)
+  return (arr.indexOf(elem) >= 0);
 }
 
 function JPTokenizer (dictionary, _dst, includeUnknownToken, lib) {
   if ( !lib ) {
-    lib = {}
+    lib = {};
   }
   this.dictionary = dictionary;
   this._dst        = _dst;
@@ -62,7 +62,7 @@ function JPTokenizer (dictionary, _dst, includeUnknownToken, lib) {
   if ( lib.morpho ) {
     this.morpho      = lib.morpho;
   }else{
-    this.morpho      = morpho;
+    this.morpho      = morpho; // TODO: require('./morpho.js')
   }
   if ( lib.async ) {
     this.async      = lib.async;
@@ -79,12 +79,12 @@ JPTokenizer.prototype.form = function(sentence, candidate, done) {
     function(word, done){
       var head = sentence.substring(0,word.length);
       if ( word !== head ) {
-        return done(null)
+        return done(null);
       }
       if ( ! candidate.f[word] ) {
         // noum
         result = [candidate];
-        return done('found')
+        return done('found');
       }
       // verb
       self.async.eachSeries(
@@ -98,39 +98,39 @@ JPTokenizer.prototype.form = function(sentence, candidate, done) {
             if ( result === null || result[0].l <= word.length ) {
               return self.parse_query(candidate,sentence.substring(word.length),{w:'*',t:{'$in':["名詞"]}}, function(err, follow){
                 if ( !follow ) {
-                  return done(null)
+                  return done(null);
                 }
                 candidate.l = word.length;
                 result = [candidate].concat(follow);
-                done('found')
-              })
+                done('found');
+              });
             }
           }else if ( kind === 2 ) {
             if ( result === null || result[0].l <= word.length ) {
               return self.parse_query(candidate,sentence.substring(word.length),{w:'*',t:{'$in':["助動詞","助詞"]}}, function(err, follow){
                 if ( !follow ) {
-                  return done(null)
+                  return done(null);
                 }
                 candidate.l = word.length;
                 result = [candidate].concat(follow);
-                done('found')
-              })
+                done('found');
+              });
             }
           }else if ( kind === 3 ) {
             if ( result === null || result[0].l <= word.length ) {
               return self.parse_query(candidate,sentence.substring(word.length),{w:'*',t:{'$in':["動詞"]}}, function(err, follow){
                 if ( !follow ) {
                   candidate.l = word.length;
-                  result = [candidate]
+                  result = [candidate];
                 } else {
                   candidate.l = word.length;
                   result = [candidate].concat(follow);
                 }
-                done('found')
+                done('found');
               });
             }
           }
-          return done(null)
+          return done(null);
         },
         function(err){
           return done(err);
@@ -139,7 +139,7 @@ JPTokenizer.prototype.form = function(sentence, candidate, done) {
     function(err){
       if ( err ) {
         if ( err === 'found' ){
-          return done(null, result)
+          return done(null, result);
         }
       }
       return done(err, result);
@@ -222,66 +222,66 @@ function katakana(str){
 
 JPTokenizer.prototype.search_follows = function(candidate, sentence, done){
   var self = this;
-  var results = [candidate]
+  var results = [candidate];
   self.async.series([
     function(done){
       if ( !array_in(candidate.t,"名詞") ) {
-        return done(null)
+        return done(null);
       }
       self.parse_query(candidate,sentence,{w:"*",t:{'$in':["助動詞"]}}, function(err, follow){
         if ( !follow ) {
-          return done(null)
+          return done(null);
         }
         results = [candidate].concat(follow);
-        return done('found')
+        return done('found');
       });
     },
     function(done){
       if ( !array_in(candidate.t,"名詞接続") ) {
-        return done(null)
+        return done(null);
       }
       self.parse_query(candidate,sentence,{w:"*",t:{'$in':["名詞"]}}, function(err, follow){
         if ( !follow ) {
-          return done(null)
+          return done(null);
         }
         results = [candidate].concat(follow);
-        return done('found')
+        return done('found');
       });
     },
     function(done){
       if ( !array_in(candidate.t,"形容動詞語幹") ) {
-        return done(null)
+        return done(null);
       }
       self.parse_query(candidate,sentence,{w:"だ",t:{'$in':["助動詞"]}}, function(err, follow){
         if ( !follow ) {
-          return done(null)
+          return done(null);
         }
         results = [candidate].concat(follow);
-        return done('found')
+        return done('found');
       });
     },
     function(done){
       if ( !array_in(candidate.t,"サ変接続") ) {
-        return done(null)
+        return done(null);
       }
       self.parse_query(candidate,sentence,{w:{'$in':["できる","する"]},t:{'$in':["動詞"]}}, function(err, follow){
         if ( !follow ) {
-          return done(null)
+          return done(null);
         }
         results = [candidate].concat(follow);
-        return done('found')
+        return done('found');
       });
     },
     function(done){
       if ( !array_in(candidate.t,"副詞可能") ) {
-        return done(null)
+        return done(null);
       }
       self.parse_query(candidate,sentence,{w:"*",t:adverb}, function(err, follow){
         if ( !follow ) {
-          return done(null)
+          return done(null);
         }
         results = [candidate].concat(follow);
-        return done('found')
+        return done('found');
       });
     },
     // function(done){
@@ -309,40 +309,39 @@ JPTokenizer.prototype.search_follows = function(candidate, sentence, done){
     //   });
     // },
   ], function(err){
-    return done(err, results)
-  })
-}
+    return done(err, results);
+  });
+};
 
 JPTokenizer.prototype.parse_original = function(sentence, word, type, done){
   var self = this;
   this.dictionary.findBest(word, function(err, candidate){
     function getCandidate(candidate, done) {
       if ( candidate ) {
-        return done(null, candidate)
+        return done(null, candidate);
       }
       //candidate = this.morpho.forms(self.dictionary.nheads(),{w:word,l:word.length,c:0,s:300,t:["名詞","ORG",type],h:word[0]});
       candidate = self.morpho.forms(self.dictionary.nheads(),{w:word,l:word.length,c:0,s:300,t:["名詞","ORG",type]});
       self.dictionary.upsert(candidate, done);
-    }
+    };
     getCandidate(candidate, function(err, candidate){
-      candidate.l = word.length
+      candidate.l = word.length;
       self.search_follows(candidate,sentence.substring(word.length), done);
     });
-  })
-}
-
+  });
+};
 
 
 JPTokenizer.prototype.original_candidate = function(sentence){
   var match;
   if ( (match = sentence.match(this.morpho.re_date1)) ||  (match = sentence.match(this.morpho.re_date2)) ) {
-    return { match: match[0], type: 'DATE'}
+    return { match: match[0], type: 'DATE'};
   }else if ( match = sentence.match(this.morpho.re_number1) ) {
-    return { match: match[0], type: 'NUMBER'}
+    return { match: match[0], type: 'NUMBER'};
   }else if ( match = alphabet(sentence) ) {
-    return { match: match, type: 'EN'}
+    return { match: match, type: 'EN'};
   }else if ( match = katakana(sentence) ) {
-    return { match: match, type: '外来'}
+    return { match: match, type: '外来'};
   }else if ( isIgnore(sentence) ) {
     return null;
   }
@@ -363,12 +362,12 @@ JPTokenizer.prototype.parse_query = function(current, sentence, query, done){
     query.h = sentence.substring(0,this.dictionary.nheads());
 //      query.w = { '$regex':'^'+sentence[0]};
   }
-  query.l = {$gt: original_candidate.match.length }
+  query.l = {$gt: original_candidate.match.length };
   var finished = false;
   var result = null;
   self.async.during(
     function(done){
-      done(null, !finished)
+      done(null, !finished);
     },
     function(done){
       self.nquery++;
@@ -380,19 +379,19 @@ JPTokenizer.prototype.parse_query = function(current, sentence, query, done){
             if ( typeof candidate.w === 'string' ){
               var head = sentence.substring(0,candidate.w.length);
               if ( candidate.w !== head ) {
-                return done(null)
+                return done(null);
               }
               return self.search_follows(candidate, sentence.substring(candidate.w.length), function(err, ret){
-                result = ret
+                result = ret;
                 done('found');
-              })
+              });
             }else{
               return self.form(sentence, candidate, function(err, ret){
                 result = ret;
                 if ( !result ) {
-                  return done(null)
+                  return done(null);
                 }
-                return done('found')
+                return done('found');
               });
             }
           },
@@ -400,31 +399,30 @@ JPTokenizer.prototype.parse_query = function(current, sentence, query, done){
             if ( err ) {
               finished = true;
               if ( err === 'found' ) {
-                return done(null)
+                return done(null);
               }
-              return done(err)
+              return done(err);
             }
             if ( original_candidate.match ) {
               finished = true;
               return self.parse_original(sentence, original_candidate.match, original_candidate.type, function(err, ret){
                 result = ret;
-                done(null)
+                done(err);
               });
             }
             if ( query.h && query.h.length > 1 ) {
               query.h = query.h.substring(0,query.h.length-1);
-               return done(null)
+              return done(null);
             }
-             return done('found') // null
+            return done('found'); // null
           });
       });
     },
     function(err){
       if (done) { // @@@
-        return done(err, result)
+        return done(err, result);
       }
-    }
-  )
+    });
   return result; // **** @@@@
 }
 
@@ -473,9 +471,8 @@ JPTokenizer.prototype.parse_token = function(current, sentence, done){
       cond = first;
     }
   }
-  this.parse_query(current,sentence, {w:'*',t:cond}, done)
-}
-
+  this.parse_query(current,sentence, {w:'*',t:cond}, done);
+};
 
 JPTokenizer.prototype.result = function(pos, word, candidate, done) {
   // printjson({s:word,d:candidate.w,t:candidate.t,p:candidate.p,c:candidate});
@@ -485,9 +482,10 @@ JPTokenizer.prototype.result = function(pos, word, candidate, done) {
     p:pos,
     w:word,
     l:candidate.l,
-    c:candidate._id
+    c:candidate._id,
+    sy:candidate.sy
   }, candidate, done);
-}
+};
 
 JPTokenizer.prototype.parse_doc = function(docid, doc, done){
   var self = this;
@@ -522,7 +520,7 @@ JPTokenizer.prototype.parse_doc = function(docid, doc, done){
           pos++;
           current = candidate;
           self.idx++; // TODO: How to save result ? Is it correct to increment index ?
-          return done(null)
+          return done(null);
         }
         var word = doc[pos];
         var matches = doc.substring(pos,len).match(/^\s+/);
@@ -540,12 +538,12 @@ JPTokenizer.prototype.parse_doc = function(docid, doc, done){
             pos+= candidate.l;
             current = candidate;
             return self.result(pos,word,candidate, done);
-          })
+          });
         }
-      })
+      });
     },
     function (err) {
       self._dst.finish(done);
     }
   );
-}
+};

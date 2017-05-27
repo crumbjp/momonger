@@ -4,15 +4,16 @@
   "description": "WIP version",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test NODE_PATH=src mocha"
+    "build": "rm -rf built && coffee -o 'built' -c src/momonger && coffee -o 'built/bin' -c bin && cp -r src/momonger/node-jptokenizer/mongolib built/node-jptokenizer/ && cp README.md package.json built/"
   },
   "author": "hiroaki.kubota@mail.crumb.jp",
   "license": "MIT",
   "dependencies": {
     "async": "^1.5.0",
     "cluster": "^0.7.7",
-    "mongodb": "^2.1.1",
+    "mongodb": "^2.2.25",
     "opts": "^1.2.2",
+    "redis": "^2.7.1",
     "sift": "^3.0.0",
     "underscore": "^1.8.3"
   },
@@ -30,8 +31,5 @@
     "ejs": "^2.3.1",
     "express": "^4.12.4",
     "moment": "^2.10.3"
-  },
-  "scripts": {
-    "build": "rm -rf built && coffee -o 'built' -c src/momonger && coffee -o 'built/bin' -c bin && cp -r src/momonger/node-jptokenizer/mongolib built/node-jptokenizer/ && cp README.md package.json built/"
   }
 }

@@ -6,13 +6,12 @@ router.get '/:name', (req, res)->
   name = req.params.name
   idf = new Idf name
   idf.init (err)->
-    console.log req.query
     if req.query.del_word
       idf.updateById req.query.del_word, {$set: {value: 0}}, (err)->
         res.status 200
         res.render 'success'
-    else if req.query.del_dic
-      idf.update_dictionary req.query.del_dic, {$set: {i: 0}}, (err)->
+    else if req.query.update_dic
+      idf.update_dictionary req.query.update_dic, {$set: {i: parseInt(req.query.i)}}, (err)->
         res.status 200
         res.render 'success'
     else

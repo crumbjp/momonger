@@ -38,6 +38,12 @@ opts.parse [
   description : 'config path'
   value       : true
   required    : false
+,
+  short       : 'p'
+  long        : 'chunkSize'
+  description : 'chunkSize (default: 300)'
+  value       : true
+  required    : false
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.token"
@@ -45,19 +51,19 @@ field = opts.get 'field'
 append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 dictionaryPath = opts.get('dictionary') || 'config/dictionary.conf'
-
+chunkSize = opts.get('chunkSize') || 300
 
 async   = require 'async'
 Config = require 'momonger/config'
-{JobControl} = require 'momonger/core'
+{JobControl} = require 'momonger/job'
 {Tokenize} = require 'momonger/tokenize'
 
 options = {
-  chunkSize: 10 # TODO: 100 or 1000 ?
+  chunkSize: chunkSize
   runLocal: false
   src
   dst
-  field
+  fields: field.split(',')
   dictionary: Config.load dictionaryPath
   append
 }

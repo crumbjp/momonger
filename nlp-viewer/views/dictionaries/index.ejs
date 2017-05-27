@@ -4,18 +4,55 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
-    <input id="word" type="text"></input>
-    <button id="search">検索</button>
+  <input id="word" type="text"></input>
+  <button id="search">検索</button>
+  <h3><%= search %> ( <%= words.length %> ) </h3>
+
+  <table>
+    <tr>
+      <th>_id</th>
+      <th>word</th>
+      <th>type</th>
+      <th>boost</th>
+      <th>synonyms</th>
+      <th></th>
+    </tr>
+    <% for (var i in words) { var word = words[i]; %>
+    <tr>
+      <th><%= word._id %></th>
+      <td><%= word.w %></td>
+      <td><%= word.t.join(', ') %></td>
+      <td><%= word.i %></td>
+      <td class="input">
+        <span><%= (word.sy||[]).join(' ') %></span>
+        <input type="text" name="i" value="<%= (word.sy||[]).join(' ') %>"/>
+        <button class="update" op="update_dic" value="<%= word._id %>">synonym 更新</button>
+      </td>
+      <td></td>
+    </tr>
+    <% } %>
+  </table>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 	<script><!--
 $(function(){
   $('#search').click(function(e){
-    new_location = location.href;
-    if ( location.href[location.href.length-1] !== '/' ) {
-      new_location += '/'
-    }
-    new_location += $('#word').val();
+    new_location = '/dictionaries/' + $('#word').val();
     location.href = new_location;
+  });
+  $('td.input').click(function(e){
+    $(this).addClass('edit');
+  });
+  $('button.update').click(function(e){
+    var button = $(this);
+    var input = button.closest('tr').find('input[name="i"]');
+    $.get('/dictionaries/update?'+button.attr('op')+'='+button.val()+ '&sy=' + input.val(), function(body, result){
+    if ( result === 'success' ) {
+        var val = input.val();
+        var td = input.closest('td');
+        td.find('span').html(val);
+        td.removeClass('edit');
+      }
+    });
   });
 });
 	--></script>

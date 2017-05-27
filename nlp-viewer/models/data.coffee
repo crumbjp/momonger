@@ -13,6 +13,7 @@ class Data extends Base
       @dictionary = new Dictionary @meta.dictionary
       @token = new Base @meta.token
       @doc = new Base @meta.docs
+      @tfidf = new Base @meta.tfidf
       done err
 
   headLoc: (loc)->
@@ -36,16 +37,16 @@ class Data extends Base
     console.log search_words
     async.map search_words
     , (search_word, done)=>
-      @dictionary.find search_word, (err, words)=>
+      @dictionary.findAsArray {w: search_word}, (err, words)=>
         ids = []
         for word in words
           ids.push word._id
-        @token.col().find(
+        @token.findAsArray
           c:
             $in: ids
         ,
           d: 1
-        ).toArray (err, tokens)=>
+        , (err, tokens)=>
           ds = {}
           for token in tokens
             ds[token.d] = token.d
@@ -64,33 +65,35 @@ class Data extends Base
         console.log "getDocs docs #{docs.length}"
         ret = []
         for doc in docs
+          data = ''
+          for field in @meta.fields
+            data += doc[field] + "\n"
           ret.push {
             _id: doc._id
-            doc: doc[@meta.doc_field][0..255]
+            doc: data
           }
         done err, ret
 
   getTokens: (id, done)->
-    @token.col().find(
+    @token.find
       d: id
     ,
       d: 1
       i: 1
       w: 1
       c: 1
-    ).sort(
-      d: 1
-      i: 1
-    ).toArray done
+    , (err, cursor) ->
+      return done err if err
+      cursor.sort({d: 1, i: 1}).toArray done
 
   get: (id, done)->
-    @col().findOne
+    @findOne
       _id: id
     , (err, document)=>
       document.cs = document.cs[0..9]
-      document.loc = @headLoc document.loc
       @getDocs [id], (err, docs)=>
-        document.doc = docs[0]
+        document.doc = docs[0].doc
+        document.loc = @headLoc docs[0].loc
         @getTokens id, (err, tokens)=>
           document.tokens = tokens
           done null, document
@@ -104,7 +107,10 @@ class Data extends Base
       @getDocs (doc._id for doc in _.values(docsById)), (err, docs)=>
         console.log "getDocs docs #{docs.length}"
         for doc in docs
-          docsById[doc._id].doc = doc[@meta.doc_field]
+          docsById[doc._id].loc = doc.loc
+          docsById[doc._id].doc = ''
+          for field in @meta.fields
+            docsById[doc._id].doc += doc[field] + "\n"
         ret = []
         for id, doc of docsById
           ret.push @formDocument(doc)
@@ -113,13 +119,24 @@ class Data extends Base
   getDocs: (ids, done)->
     console.log "getDocs #{ids.length}"
     fields = {}
-    fields[@meta.doc_field] = 1
-    @doc.col().find(
+    for field in @meta.fields
+      fields[field] = 1
+    @doc.findAsArray
       _id :
         $in: ids
-    ,
-      fields
-    ).toArray done
+    , fields
+    , (err, docs) =>
+      return done err if err
+      async.eachSeries docs, (doc, done) =>
+        @tfidf.findOne
+          _id: doc._id
+        , (err, tfidf) =>
+          return done err if err or !tfidf
+          doc.loc = tfidf.v
+          done(null)
+      , (err) =>
+        done err, docs
+
 
 
 
