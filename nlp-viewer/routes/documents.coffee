@@ -29,9 +29,11 @@ router.get '/:name/promote/:id', (req, res)->
     data.getDocs [id], (err, documents) ->
       document = documents[0]
       cluster = new Cluster data.meta.kmeans.cluster
-      cluster.findAndModify {name: id}, {_id: 1}, {v: document.loc, d: 1, n: 1}, {new: true, upsert: true}, (err, newCluster) ->
+      cluster.findAndModify {name: id}, {_id: 1}, {name: id, v: document.loc, d: 1, n: 1}, {new: true, upsert: true}, (err, result) ->
         return if err
-        data.update {$push: {cs: {_id: newCluster._id, s: 1.0}}}
+        newCluster = result.value
+        console.log newCluster
+        data.update {_id: id}, {$set: {c: newCluster._id}, $push: {cs: {$each: [{_id: newCluster._id, s: 1.0}], $sort: {s: -1}}}}
     res.redirect("/clusters/#{data.meta.kmeans.cluster}");
 
 router.get '/:name/show', (req, res)->

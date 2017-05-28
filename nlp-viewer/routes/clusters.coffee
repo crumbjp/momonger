@@ -1,5 +1,6 @@
 express = require 'express'
 Cluster = require '../models/cluster'
+mongodb = require 'mongodb'
 router = express.Router()
 
 router.get '/:name', (req, res)->
@@ -18,6 +19,9 @@ router.get '/:name/:cluster_id', (req, res)->
   cluster_id = req.params.cluster_id
   if name && cluster_id
     cluster = new Cluster name
+    if req.query.delete
+      cluster.remove {_id: mongodb.ObjectId cluster_id}, (err)->
+        return res.redirect("/clusters/#{name}")
     cluster.cluster cluster_id, (err, c, documents, dictionary)->
       return res.render 'clusters/show',
         name: name
