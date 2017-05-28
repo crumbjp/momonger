@@ -46,7 +46,7 @@ class Tokenize extends MapJob
                 a: @options.append
               }
               if token.sy
-                Array.prototype.push.apply synonyms, token.sy
+                Array.prototype.push.apply synonyms, _.compact(token.sy)
             async.series [
               (done) =>
                 return done null if synonyms.length == 0
