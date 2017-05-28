@@ -39,18 +39,18 @@ class Idf extends MapJob
           if @options.filterNoise
             if word.l <= 2
               return done null if 'NUMBER' in word.t
-            conjugates = word.w
-            conjugates = [word.w] if _.isString word.w
-            isFilterOut = true
-            for conjugate in conjugates
-              filtered = _.filter conjugate, (char)->
-                code = char.charCodeAt 0
-                #  hira, kata or alpha
-                ( code >= 0x3000 && code <= 0x30ff ) or ( code >= 0xFF00 && code <= 0xFFFF)
-              unless filtered.length
-                isFilterOut = false
-                break
-            return done null if isFilterOut
+              conjugates = word.w
+              conjugates = [word.w] if _.isString word.w
+              isFilterOut = true
+              for conjugate in conjugates
+                filtered = _.filter conjugate, (char)->
+                  code = char.charCodeAt 0
+                  #  hira, kata or alpha
+                  ( code >= 0x3000 && code <= 0x30ff ) or ( code >= 0xFF00 && code <= 0xFFFF)
+                unless filtered.length
+                  isFilterOut = false
+                  break
+              return done null if isFilterOut
 
           score = Math.log(@meta.num/doc.value)
 
