@@ -30,12 +30,12 @@ class Idf extends MapJob
 
           if @options.noun
             return done null unless '名詞' in word.t
-            return done null if '代名詞' in word.t
-            if '接尾' in word.t
-              return done null unless '助数詞' in word.t # ずつ,ちゃん,...
-              return done null if word.l <= 1 # 個, 枚,...
-              # アンペア,...
-            return done null if '副詞可能' in word.t # あした, １月, こんど,...
+            return done null if '非自立' in word.t # さま
+            unless '固有名詞' in word.t
+              return done null if '代名詞' in word.t
+              return done null if '接尾' in word.t # 枚, 個, ワット,...
+              return done null if '副詞可能' in word.t # あした, １月, こんど,...
+              return done null if 'NUMBER' in word.t
           if @options.filterNoise
             if word.l <= 2
               return done null if 'NUMBER' in word.t
@@ -55,7 +55,7 @@ class Idf extends MapJob
           score = Math.log(@meta.num/doc.value)
 
           if @options.useDictionaryCoefficient
-            score *= word.i if word.i?
+            score *= parseInt(word.i) if word.i?
 
           @results.push {
             _id: doc._id
