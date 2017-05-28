@@ -9,7 +9,6 @@ Dictionary = require './dictionary'
 class Data extends Base
   initialized: (done)->
     @getmeta (err, @meta)=>
-      console.log @meta
       @dictionary = new Dictionary @meta.dictionary
       @token = new Base @meta.token
       @doc = new Base @meta.docs
@@ -34,7 +33,6 @@ class Data extends Base
 
   search: (search, done)->
     search_words = search.split /[\s　]/
-    console.log search_words
     async.map search_words
     , (search_word, done)=>
       @dictionary.findAsArray {w: search_word}, (err, words)=>
@@ -136,9 +134,5 @@ class Data extends Base
           done(null)
       , (err) =>
         done err, docs
-
-
-
-
 
 module.exports = Data

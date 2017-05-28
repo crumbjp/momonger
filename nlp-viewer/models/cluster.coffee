@@ -69,7 +69,7 @@ class Cluster extends Base
       _id : mongodb.ObjectId(id)
     , (err, cluster) =>
       console.log "cluster found", cluster._id
-      formed = @form_cluster cluster, 10
+      formed = @form_cluster cluster, 50
 
       @getByCluster cluster._id, (err, docs) =>
         locs = formed.loc

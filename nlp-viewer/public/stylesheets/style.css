@@ -113,3 +113,12 @@ td.input.edit input, td.input.edit button {
 td.input.edit span {
   display: none;
 }
+.document {
+  line-height: 1.3em;
+}
+.document a {
+  color: #000;
+}
+.document a:hover {
+  font-weight: bold;
+}

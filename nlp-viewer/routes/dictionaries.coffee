@@ -23,9 +23,15 @@ router.get '/update', (req, res)->
 router.get '/:search', (req, res)->
   search = req.params.search
   dictionary = new Dictionary()
-  dictionary.search search, (err, words)->
-    res.render 'dictionaries/index',
-      search: search
-      words: words
+  if req.query.id
+    dictionary.get [req.query.id], (err, words)->
+      res.render 'dictionaries/index',
+        search: ''
+        words: words
+  else
+    dictionary.search search, (err, words)->
+      res.render 'dictionaries/index',
+        search: search
+        words: words
 
 module.exports = router;

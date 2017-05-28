@@ -21,6 +21,19 @@ router.get '/:name/search/:search', (req, res)->
         search: search
         documents: documents
 
+router.get '/:name/promote/:id', (req, res)->
+  name = req.params.name
+  id = mongodb.ObjectId req.params.id
+  data = new Data name
+  data.init (err)->
+    data.getDocs [id], (err, documents) ->
+      document = documents[0]
+      cluster = new Cluster data.meta.kmeans.cluster
+      cluster.findAndModify {name: id}, {_id: 1}, {v: document.loc, d: 1, n: 1}, {new: true, upsert: true}, (err, newCluster) ->
+        return if err
+        data.update {$push: {cs: {_id: newCluster._id, s: 1.0}}}
+    res.redirect("/clusters/#{data.meta.kmeans.cluster}");
+
 router.get '/:name/show', (req, res)->
   name = req.params.name
   id = req.query.id

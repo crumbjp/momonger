@@ -2,12 +2,12 @@
 <ul>
   <% if (meta) { %>
     <% if (meta.kmeans) { %>
-      <li><a href="/clusters/<%= meta.kmeans.cluster %>">クラスター</a></li>
-      <li><a href="/documents/<%= meta.kmeans.data %>">ドキュメント</a></li>
+      <li><a href="/clusters/<%= meta.kmeans.cluster %>" target="_blank">クラスター</a></li>
+      <li><a href="/documents/<%= meta.kmeans.data %>" target="_blank">ドキュメント</a></li>
     <% } %>
     <% if (meta.idf) { %>
-      <li><a href="/idfs/<%= meta.idf %>">IDF</a></li>
+      <li><a href="/idfs/<%= meta.idf %>" target="_blank">IDF</a></li>
     <% } %>
-    <li><a href="/phrases/<%= meta.docs %>.phrase">熟語抽出</a></li>
+    <li><a href="/phrases/<%= meta.docs %>.phrase" target="_blank">熟語抽出</a></li>
   <% } %>
 </ul>
