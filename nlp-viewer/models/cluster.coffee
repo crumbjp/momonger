@@ -48,13 +48,15 @@ class Cluster extends Base
     @data.get id, (err, document)=>
       cluster_ids = []
       for c in document.cs
-        cluster_ids.push c.c
+        cluster_ids.push c._id
       @getByLocs document.loc, (err, dictionary1)=>
         @clusters cluster_ids, (err, clusters, dictionary2)=>
           dictionary = _.extend dictionary1, dictionary2
           clusterById = _.indexBy(clusters, '_id')
           for c in document.cs
-            c.cluster = clusterById[c.c]
+            c.n = clusterById[c._id].n
+            c.loc = clusterById[c._id].loc
+
           done null, document, dictionary
 
   getByCluster: (id, done)->
