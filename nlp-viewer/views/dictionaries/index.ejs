@@ -32,7 +32,9 @@
         <input type="text" name="sy" value="<%= (word.sy||[]).join(' ') %>"/>
         <button class="update" op="update_sy" value="<%= word._id %>">synonym 更新</button>
       </td>
-      <td></td>
+      <td>
+        <button class="del" op="del_word" value="<%= word._id %>">削除</button>
+      </td>
     </tr>
     <% } %>
   </table>
@@ -42,6 +44,14 @@ $(function(){
   $('#search').click(function(e){
     new_location = '/dictionaries/' + $('#word').val();
     location.href = new_location;
+  });
+  $('button.del').click(function(e){
+    var button = $(this);
+    $.get('/dictionaries/update?'+button.attr('op')+'='+button.val(), function(body, result){
+      if ( result === 'success' ) {
+        button.closest('tr').remove();
+      }
+    });
   });
   $('td.input').click(function(e){
     $(this).addClass('edit');

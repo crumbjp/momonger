@@ -1,5 +1,6 @@
 express = require 'express'
 Dictionary = require '../models/dictionary'
+mongodb = require 'mongodb'
 router = express.Router()
 
 router.get '/', (req, res)->
@@ -17,6 +18,9 @@ router.get '/update', (req, res)->
   if req.query.update_boost
     i = req.query.val
     dictionary.updateById req.query.update_boost, {$set: {i: i}}, (err)->
+  if req.query.del_word
+    dictionary.remove {_id: mongodb.ObjectId req.query.del_word}, (err)->
+
   res.status 200
   res.render 'success'
 
