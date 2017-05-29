@@ -11,7 +11,8 @@ class Tokenize extends MapJob
     if @options.append
       @options.appendDst = true
       @options.query.a = @options.append
-
+    @options.tokenizerOpts ||=
+      includeUnknownToken: true
   mapper: ->
     class TokenizeMapper extends Mapper
       beforeRun: (done) =>
@@ -20,8 +21,7 @@ class Tokenize extends MapJob
 
       map: (doc, done)=>
         @emit '.meta', 1 unless @options.append?
-
-        jptokenizer = new @JPTokenizer @options.dictionary
+        jptokenizer = new @JPTokenizer @options.dictionary, @options.tokenizerOpts
         jptokenizer.modifier = (result, candidate, done)->
           return done null, null if '不明' in candidate.t
           return done null, null if '記号' in candidate.t

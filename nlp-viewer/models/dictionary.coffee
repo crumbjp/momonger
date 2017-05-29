@@ -28,7 +28,7 @@ class Dictionary extends Mongo
         l: word.length
         s: 300
         c: 3000
-        t: _.chain(['名詞', '一般'].concat(t)).compact().values()
+        t: _.chain(['名詞', '一般'].concat(t)).compact().value()
         f: {}
         h: word[0..(@meta.nheads-1)]
     @update

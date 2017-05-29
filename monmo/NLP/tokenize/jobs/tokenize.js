@@ -71,7 +71,7 @@ function main(jobctl,options) {
           done(null)
         }
       };
-			this.tokenizer = new JPTokenizer(dictionary, dst, false );
+			this.tokenizer = new JPTokenizer(dictionary, dst, {} );
 
 			return {ok:1};
 		},

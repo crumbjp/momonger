@@ -3,7 +3,8 @@ Dictionary = require './dictionary'
 mongolib = require './mongolib'
 
 class JPTokenizer
-  constructor: (config)->
+  constructor: (config, options)->
+    options ||= {includeUnknownToken: true}
     @dictionary = Dictionary.get config
     self = this
     dst = {
@@ -15,8 +16,7 @@ class JPTokenizer
       finish: (done)->
         done null
     }
-
-    @impl = new mongolib.JPTokenizer @dictionary, dst, true,
+    @impl = new mongolib.JPTokenizer @dictionary, dst, options,
       async: require 'async'
       morpho: mongolib.morpho
 

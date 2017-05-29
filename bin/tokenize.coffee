@@ -39,6 +39,12 @@ opts.parse [
   value       : true
   required    : false
 ,
+  short       : 'l'
+  long        : 'separate-loan-word'
+  description : 'separate loan word'
+  value       : false
+  required    : false
+,
   short       : 'p'
   long        : 'chunkSize'
   description : 'chunkSize (default: 300)'
@@ -51,12 +57,20 @@ field = opts.get 'field'
 append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 dictionaryPath = opts.get('dictionary') || 'config/dictionary.conf'
+separateLoanWord = opts.get('separate-loan-word')
 chunkSize = opts.get('chunkSize') || 300
 
 async   = require 'async'
 Config = require 'momonger/config'
 {JobControl} = require 'momonger/job'
 {Tokenize} = require 'momonger/tokenize'
+
+tokenizerOpts =
+  includeUnknownToken: true
+if separateLoanWord
+  tokenizerOpts =
+    includeUnknownToken: true
+    separateLoanWord: true
 
 options = {
   chunkSize: chunkSize
@@ -65,6 +79,7 @@ options = {
   dst
   fields: field.split(',')
   dictionary: Config.load dictionaryPath
+  tokenizerOpts
   append
 }
 

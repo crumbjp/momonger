@@ -8,6 +8,13 @@ router.get '/', (req, res)->
     search: '',
     words: []
 
+router.get '/create/:word', (req, res)->
+  if req.params.word
+    dictionary = new Dictionary()
+    dictionary.initialized ()->
+      dictionary.put req.params.word, null, (err)->
+        res.redirect "/dictionaries/#{req.params.word}"
+
 router.get '/update', (req, res)->
   dictionary = new Dictionary()
   if req.query.update_sy

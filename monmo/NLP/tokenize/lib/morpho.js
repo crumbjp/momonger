@@ -1,7 +1,7 @@
 if ( typeof utils === 'undefined' ) {
   utils = {
     array_in: function (arr, elem) {
-      return (arr.indexOf(elem) >= 0)
+      return (arr.indexOf(elem) >= 0);
     },
     array_all: function (arr, ts){
       for ( var i in ts ) {
