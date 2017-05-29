@@ -40,7 +40,7 @@ class Cluster extends Base
       @idf.get _.keys(ids), (err, idfs)=>
         console.log "getByLocs k: #{idsLen}, i: #{dics.length}"
         for idf in idfs
-          dicById[idf._id].idf = idf.value
+          dicById[idf._id].idf = idf.value if dicById[idf._id]
         done err, dicById
 
   getByDocument: (id, done)->
