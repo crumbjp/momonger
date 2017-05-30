@@ -42,14 +42,14 @@ class Cache
           # Do nothing
         if err or !res or !decoded or decodeError
           return block (err, decoded) =>
-            redisClient.setex key, (@config.expire || 86400), common.encodeToString(decoded)
+            redisClient.setex key, (@config.expire || 600), common.encodeToString(decoded)
             done null, decoded
         done null, decoded
 
   cacheSet: (cacheKey, data, done) ->
     @setUp (err, redisClient) =>
       return done null if err or !redisClient
-      redisClient.setex common.encodeToString(cacheKey), (@config.expire || 86400),common.encodeToString(data), (err) ->
+      redisClient.setex common.encodeToString(cacheKey), (@config.expire || 600),common.encodeToString(data), (err) ->
         done null
 
 exports.Cache = Cache
