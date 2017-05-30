@@ -346,38 +346,56 @@ JPTokenizer.prototype.original_candidate = function(sentence, done){
     if (!this.separateLoanWord){
       return done(null, { match: match, type: '外来'});
     }
-    var pos = 0;
-    var results = [];
-    self.async.during(
-      function(done){
-        done(null, pos < match.length);
-      },
-      function(done){
-        var query = {
-          h: match.substring(pos, pos+self.dictionary.nheads()),
-          l: { $gte: 2 }
-        };
-        self.dictionary.findCandidates(query, function(err, candidates){
-          for ( var candidate of candidates ) {
-            if ( typeof candidate.w != 'string' ){
-              continue;
-            }
-            var head = match.substring(pos,pos+candidate.w.length);
-            if ( candidate.w === head ) {
-              pos += candidate.w.length;
-              results.push(candidate.w);
+    function search_katakana_combination(str, done) {
+      if(str.length == 0) {
+        return done(null, []);
+      }
+      var finished = false;
+      var results = [];
+      self.async.during(
+        function(done){
+          done(null, !finished);
+        },
+        function(done){
+          var query = {
+            h: str.substring(0, self.dictionary.nheads()),
+            l: { $gte: 2 }
+          };
+          self.dictionary.findCandidates(query, function(err, candidates){
+            self.async.eachSeries(candidates, function(candidate, done) {
+              if ( typeof candidate.w != 'string' ){
+                return done(null);
+              }
+              var head = str.substring(0,candidate.w.length);
+              if ( candidate.w === head ) {
+                return search_katakana_combination(str.substring(candidate.w.length), function(err, res) {
+                  if( err ) {
+                    return done(null);
+                  }
+                  finished = true;
+                  res.push(candidate);
+                  results = res;
+                  return done('match');
+                });
+              }
               return done(null);
-            }
-          }
-          return done('unmatch');
+            }, function(err){
+              if( !finished ) {
+                return done('unmatch');
+              }
+              return done(null);
+            });
+          });
+        }, function(err){
+          return done(err, results.reverse());
         });
-      },
-      function(err) {
-        if(err){
-          return done(null, { match: match, type: '外来'});
-        }
-        return done(null, { match: results[0], type: '外来'});
-      });
+    }
+    search_katakana_combination(match, function(err, results) {
+      if(err){
+        return done(null, { match: match, type: '外来'});
+      }
+      return done(null, results);
+    });
   } else if ( isIgnore(sentence) ) {
     return done(null, null);
   } else {
@@ -396,6 +414,9 @@ JPTokenizer.prototype.parse_query = function(current, sentence, query, done){
     }
     if ( original_candidate === null ) {
       return done(null);
+    }
+    if ( Array.isArray(original_candidate) ) {
+      return done(null, original_candidate);
     }
     if ( query.w === '*' ) {
       delete query.w;
