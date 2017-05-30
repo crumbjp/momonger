@@ -25,7 +25,7 @@ class Idf extends Base
           done err, idfs, _.indexBy(dics, '_id')
 
   search: (search, done)->
-    @dictionary.search search, (err, dics)=>
+    @dictionary.search search, {}, (err, dics)=>
       ids = []
       for dic in dics
         ids.push ''+dic._id

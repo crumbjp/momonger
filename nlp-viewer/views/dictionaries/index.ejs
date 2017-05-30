@@ -4,8 +4,11 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
-  <input id="word" type="text"></input>
+  <input id="word" type="text" value="<%= search %>"></input>
+  <label for="ORG">ORG only</input>
+  <input id="ORG" type="checkbox" <%= ORG ? 'checked="checked"' : ''%> ></input>
   <button id="search">検索</button>
+  <button id="removeORG">ORG削除</button>
   <h3><%= search %> ( <%= words.length %> ) </h3>
 
   <table>
@@ -15,6 +18,7 @@
       <th>type</th>
       <th>boost</th>
       <th>synonyms</th>
+      <th>ORG</th>
       <th></th>
     </tr>
     <% for (var i in words) { var word = words[i]; %>
@@ -33,6 +37,11 @@
         <button class="update" op="update_sy" value="<%= word._id %>">synonym 更新</button>
       </td>
       <td>
+        <% if (word.t.indexOf('ORG') >= 0) { %>
+        <button class="del_org" op="del_org" value="<%= word._id %>">正式採用</button>
+        <% } %>
+      </td>
+      <td>
         <button class="del" op="del_word" value="<%= word._id %>">削除</button>
       </td>
     </tr>
@@ -42,14 +51,29 @@
 	<script><!--
 $(function(){
   $('#search').click(function(e){
-    new_location = '/dictionaries/' + $('#word').val();
+    new_location = '/dictionaries/' + $('#word').val() + '?ORG=' + $('#ORG').prop('checked');
     location.href = new_location;
+  });
+  $('#removeORG').click(function(e){
+    var res = confirm('Are you sure?');
+    if( res == true ) {
+      new_location = '/dictionaries/remove_org/' + $('#word').val();
+      location.href = new_location;
+    }
   });
   $('button.del').click(function(e){
     var button = $(this);
     $.get('/dictionaries/update?'+button.attr('op')+'='+button.val(), function(body, result){
       if ( result === 'success' ) {
         button.closest('tr').remove();
+      }
+    });
+  });
+  $('button.del_org').click(function(e){
+    var button = $(this);
+    $.get('/dictionaries/update?'+button.attr('op')+'='+button.val(), function(body, result){
+      if ( result === 'success' ) {
+        button.remove();
       }
     });
   });

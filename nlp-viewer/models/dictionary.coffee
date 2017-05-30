@@ -15,11 +15,11 @@ class Dictionary extends Mongo
     @getmeta (err, @meta)=>
       done err
 
-  search: (search, done)->
-    @findAsArray
+  search: (search, options, done)->
+    query =
       w:
         $regex: search
-    , done
+    @findAsArray _.extend(query, options), done
 
   put: (word, t, done)->
     rec =
@@ -28,7 +28,7 @@ class Dictionary extends Mongo
         l: word.length
         s: 300
         c: 3000
-        t: _.chain(['名詞', '一般'].concat(t)).compact().value()
+        t: _.chain(['名詞', '一般', 'ORG'].concat(t)).compact().value()
         f: {}
         h: word[0..(@meta.nheads-1)]
     @update
