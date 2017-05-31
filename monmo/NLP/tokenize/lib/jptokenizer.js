@@ -423,7 +423,9 @@ JPTokenizer.prototype.parse_query = function(current, sentence, query, done){
       query.h = sentence.substring(0,self.dictionary.nheads());
       //      query.w = { '$regex':'^'+sentence[0]};
     }
-    query.l = {$gt: original_candidate.match.length };
+    if (original_candidate.match.length > 0){
+      query.l = {$gt: original_candidate.match.length };
+    }
     var finished = false;
     var result = null;
     self.async.during(
@@ -597,7 +599,7 @@ JPTokenizer.prototype.parse_doc = function(docid, doc, done){
             if ( !candidate ) {
               candidate = {w:word,l:word.length,s:9999,t:["不明"]};
             }
-            pos+= candidate.l;
+            pos++;
             current = candidate;
             return self.result(pos,word,candidate, done);
           });
