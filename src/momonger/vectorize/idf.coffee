@@ -27,7 +27,7 @@ class Idf extends MapJob
       map: (doc, done)=>
         @dictionaryMongo.findOne {_id: doc._id}, (err, word) =>
           return done null unless word
-
+          isDictionaryCoefficient = (word.i? and word.i.length > 0)
           if @options.noun
             return done null unless '名詞' in word.t
             return done null if '非自立' in word.t # さま
@@ -36,7 +36,7 @@ class Idf extends MapJob
               return done null if '接尾' in word.t # 枚, 個, ワット,...
               return done null if '副詞可能' in word.t # あした, １月, こんど,...
               return done null if 'NUMBER' in word.t
-          if @options.filterNoise
+          if @options.filterNoise and !isDictionaryCoefficient
             if word.l <= 2
               return done null if 'NUMBER' in word.t
               conjugates = word.w
@@ -54,8 +54,8 @@ class Idf extends MapJob
 
           score = Math.log(@meta.num/doc.value)
 
-          if @options.useDictionaryCoefficient
-            score *= parseInt(word.i) if word.i? and word.i.length > 0
+          if @options.useDictionaryCoefficient and isDictionaryCoefficient
+            score *= parseInt(word.i)
 
           @results.push {
             _id: doc._id
