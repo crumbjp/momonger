@@ -15,6 +15,7 @@ coffee ./bin/kmeans.coffee -s momonger.sampledoc.tfidf -d momonger.sampledoc.kme
 
 NODE_PATH=src coffee ./bin/tokenize.coffee -s analytics.target_mongo_articles -d analytics.target_mongo_articles.token2 -f title,body
 NODE_PATH=src coffee ./bin/phrase.coffee -s analytics.target_mongo_articles.token2 -d analytics.target_mongo_articles.phrase
+NODE_PATH=src coffee ./bin/tokenize.coffee -s analytics.target_mongo_articles -d analytics.target_mongo_articles.token2 -f title,body -l
 NODE_PATH=src coffee ./bin/tf.coffee -s analytics.target_mongo_articles.token2 -d analytics.target_mongo_articles.tf2
 NODE_PATH=src coffee ./bin/df.coffee -s analytics.target_mongo_articles.tf2 -d analytics.target_mongo_articles.df2
 NODE_PATH=src coffee ./bin/idf.coffee -s analytics.target_mongo_articles.df2 -d analytics.target_mongo_articles.idf2 --noun-only --use-dictionary-coefficient --filter-noise

@@ -55,7 +55,7 @@ class Idf extends MapJob
           score = Math.log(@meta.num/doc.value)
 
           if @options.useDictionaryCoefficient
-            score *= parseInt(word.i) if word.i?
+            score *= parseInt(word.i) if word.i? and word.i.length > 0
 
           @results.push {
             _id: doc._id
