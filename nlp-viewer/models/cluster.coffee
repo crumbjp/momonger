@@ -23,6 +23,7 @@ class Cluster extends Base
     ls = ls.sort (a, b) -> b.score - a.score
     return {
       _id: cluster._id
+      name: cluster.name
       n: cluster.n
       loc: ls[0..head]
     }
@@ -56,6 +57,7 @@ class Cluster extends Base
           for c in document.cs
             c.n = clusterById[c._id].n
             c.loc = clusterById[c._id].loc
+            c.name = clusterById[c._id].name
 
           done null, document, dictionary
 
@@ -101,5 +103,9 @@ class Cluster extends Base
       ret.sort (a,b)-> b.n - a.n
       @getByLocs locs, (err, dics) =>
         done err, ret, dics
+
+  updateById: (id, update, done)->
+    console.log('****', id, update)
+    @update {_id: mongodb.ObjectId(id)}, update, done
 
 module.exports = Cluster

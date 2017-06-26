@@ -9,5 +9,26 @@
     <% for (var i in clusters) { var cluster = clusters[i]; %>
     <%- render_partial('clusters/cluster', {render_partial: render_partial, name: name, meta: meta, cluster: cluster, val: '', dictionary: dictionary}) %>
     <% } %>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script><!--
+$(function(){
+  $('span.name').click(function(){
+    $(this).hide();
+    $(this).next('span.input').show();
+  });
+  $('button.update').click(function(){
+    var id = $(this).val();
+    var input = $(this).closest('.input');
+    var value = input.find('input.name').val();
+    console.log('/clusters/<%= name %>/'+id+'/update?name='+value)
+    $.get('/clusters/<%= name %>/'+id+'/update?name='+value, function(body, result){
+      if ( result === 'success' ) {
+        input.hide();
+        input.prev('span.name').text(value).show();
+      }
+    });
+  });
+});
+--></script>
   </body>
 </html>

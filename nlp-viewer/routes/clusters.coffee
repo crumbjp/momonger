@@ -14,6 +14,16 @@ router.get '/:name', (req, res)->
         dictionary: dictionary
         meta: cluster.meta
 
+router.get '/:name/:cluster_id/update', (req, res)->
+  name = req.params.name
+  cluster_id = req.params.cluster_id
+  if name && cluster_id
+    cluster = new Cluster name
+    cluster.updateById cluster_id, {$set: {name: req.query.name}}, (err) ->
+      console.log('****', err)
+      res.status 200
+      res.render 'success'
+
 router.get '/:name/:cluster_id', (req, res)->
   name = req.params.name
   cluster_id = req.params.cluster_id

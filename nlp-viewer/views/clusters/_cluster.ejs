@@ -1,4 +1,4 @@
-<h3><a href="/clusters/<%= name %>/<%= cluster._id %>"><%= cluster._id %> ( <%= cluster.n %> )</a> : <%= val %></h3>
+<h3><a href="/clusters/<%= name %>/<%= cluster._id %>"><%= cluster._id %> ( <%= cluster.n %> )</a> : <span class="name"> . <%= cluster.name %> </span><span class="input" style="display:none;"><input class="name" type="text" name="name" value="<%= cluster.name %>"/><button class="update" value="<%= cluster._id %>">更新</button></span> :<%= val %></h3>
 <% if (cluster.loc) { %>
   <%- render_partial('clusters/loc', {render_partial: render_partial, name: name, meta: meta, loc: cluster.loc, dictionary: dictionary}) %>
 <% } %>
