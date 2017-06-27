@@ -23,7 +23,7 @@
         <td style="text-align: left;"><a href="/documents/<%= meta.kmeans.data %>/show/?id=<%= _id_link(document._id) %>"><%= document._id %></a></td>
         <td style="text-align: left;"><ul>
         <% for (var j in document.cs) { var c = document.cs[j]; %>
-          <ol><a href="/clusters/<%= name %>/<%= c._id %>"><%= c._id %></a> ( <%= c.s %> ) </ol>
+          <ol><a href="/clusters/<%= name %>/<%= c._id %>"><%= c._id %></a> : <%= c.name %> : ( <%= c.s %> ) </ol>
         <% } %>
         </ul></td>
         <td style="text-align: right;">

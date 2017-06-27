@@ -74,12 +74,23 @@ class Cluster extends Base
       formed = @form_cluster cluster, 50
 
       @getByCluster cluster._id, (err, docs) =>
+        cluster_ids = []
         locs = formed.loc
         for doc in docs
           locs = locs.concat doc.loc
+          for c in doc.cs
+            cluster_ids.push c._id
+        cluster_ids =_.uniq cluster_ids
+        @clusters cluster_ids, (err, clusters, dictionary)=>
+          clusterById = _.indexBy(clusters, '_id')
+          for doc in docs
+            for c in doc.cs
+              c.n = clusterById[c._id].n
+              c.loc = clusterById[c._id].loc
+              c.name = clusterById[c._id].name
 
-        @getByLocs locs, (err, dics) =>
-          done err, formed, docs, dics
+          @getByLocs locs, (err, dics) =>
+            done err, formed, docs, dics
 
   clusters: (ids, done)->
     console.log "clusters"
@@ -105,7 +116,6 @@ class Cluster extends Base
         done err, ret, dics
 
   updateById: (id, update, done)->
-    console.log('****', id, update)
     @update {_id: mongodb.ObjectId(id)}, update, done
 
 module.exports = Cluster
