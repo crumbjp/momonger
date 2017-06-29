@@ -383,18 +383,31 @@ JPTokenizer.prototype.original_candidate = function(sentence, done){
               if( !finished ) {
                 return done('unmatch');
               }
+              if( results.length > 1 ) {
+                var score = 0;
+                for( var result of results ) {
+                  score += 1 / Math.sqrt(result.l);
+                }
+                if ( score / results.length > 0.577 ) {
+                  finished = true;
+                  return done('reset');
+                }
+              }
               return done(null);
             });
           });
         }, function(err){
-          return done(err, results.reverse());
+          if ( err == 'reset' ) {
+            return done(err, []);
+          }
+          return done(err, results);
         });
     }
     search_katakana_combination(match, function(err, results) {
       if(err){
         return done(null, { match: match, type: '外来'});
       }
-      return done(null, results);
+      return done(null, results.reverse());
     });
   } else if ( isIgnore(sentence) ) {
     return done(null, null);
