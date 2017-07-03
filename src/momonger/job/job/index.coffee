@@ -36,9 +36,12 @@ class Job
     async.parallel [
       (done) =>
         return done null unless @dstMongo
-        return done null if @options.appendDst
-        @dstMongo.drop ->
-          done null
+        if @options.appendDst
+          @dstMongo.remove {a: @options.append}, ->
+            done null
+        else
+          @dstMongo.drop ->
+            done null
       (done) =>
         return done null unless @emitMongo
         @emitMongo.drop ->

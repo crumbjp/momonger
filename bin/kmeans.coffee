@@ -15,6 +15,12 @@ opts.parse [
   value       : true
   required    : false
 ,
+  short       : 'a'
+  long        : 'append'
+  description : 'append mode'
+  value       : true
+  required    : false
+,
   short       : 'c'
   long        : 'config'
   description : 'configPath'
@@ -35,6 +41,7 @@ opts.parse [
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.kmeans"
+append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 cluster = opts.get 'cluster'
 iterate = parseFloat(opts.get('iterate')) || 100
@@ -51,6 +58,7 @@ options = {
   dst
   cluster
   iterate
+  append
 }
 
 momonger = Config.load configPath
