@@ -11,8 +11,11 @@ class Tf extends MapJob
       @options.query.a = @options.append
 
   beforeFirstMap: (done)->
-    @srcMongo.getmeta (err, @meta)=>
-      done err
+    async.series [
+      (done) => @srcMongo.getmeta (err, @meta) ->
+        done err
+      (done) => @dstMongo.createIndex {a: 1}, done
+    ], done
 
   mapper: ->
     class TfMapper extends Mapper
@@ -43,10 +46,7 @@ class Tf extends MapJob
   afterLastMap: (done)->
     return done null if @options.append?
     @meta.tf = @options.dst
-    async.parallel [
-      (done) => @dstMongo.insert @meta, done
-      (done) => @dstMongo.createIndex {a: 1}, done
-    ], done
+    @dstMongo.insert @meta, done
 
   afterRun: (done) ->
     done null, @meta
