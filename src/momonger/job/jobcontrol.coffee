@@ -25,8 +25,9 @@ class JobControl
       status: 'put'
       createdAt: new Date()
       _id: Mongo.ObjectId()
-    @jobImpl.insert implData, (err, result)->
-      done err, implData._id
+    @jobImpl.createIndex {status: 1, createdAt: 1}, (err) ->
+      @jobImpl.insert implData, (err, result)->
+        done err, implData._id
 
   put: (jobImpl, options, done)->
     name = 'unknown'
