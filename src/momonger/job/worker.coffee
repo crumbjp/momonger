@@ -23,7 +23,7 @@ exports.start = (config)->
           return done null
         console.log "Fetch job", id, implData._id
         jobControl.run implData, (err, result)->
-          console.log "Finish job", id, implData._id, err, result
+          # console.log "Finish job", id, implData._id, err, result
           done null
     , (done)->
       return done null, !finish unless empty

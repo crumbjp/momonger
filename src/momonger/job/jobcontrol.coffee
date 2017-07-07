@@ -25,7 +25,7 @@ class JobControl
       status: 'put'
       createdAt: new Date()
       _id: Mongo.ObjectId()
-    @jobImpl.createIndex {status: 1, createdAt: 1}, (err) ->
+    @jobImpl.createIndex {status: 1, createdAt: 1}, (err) =>
       @jobImpl.insert implData, (err, result)->
         done err, implData._id
 
@@ -82,7 +82,6 @@ class JobControl
         else if result
           finish = true
           job = result
-        console.log '=========== wait ================', jobid, finish
         done err
     , (done) ->
       return done false if finish
