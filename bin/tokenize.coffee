@@ -73,8 +73,8 @@ if separateLoanWord
     separateLoanWord: true
 
 options = {
-  chunkSize: chunkSize
   runLocal: false
+  chunkSize
   src
   dst
   fields: field.split(',')

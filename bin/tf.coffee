@@ -26,11 +26,18 @@ opts.parse [
   description : 'configPath'
   value       : true
   required    : false
+,
+  short       : 'p'
+  long        : 'chunkSize'
+  description : 'chunkSize (default: 300)'
+  value       : true
+  required    : false
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.tf"
 append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
+chunkSize = opts.get('chunkSize') || 1000
 
 async   = require 'async'
 Config = require 'momonger/config'
@@ -39,6 +46,7 @@ Config = require 'momonger/config'
 
 options = {
   runLocal: false
+  chunkSize
   src
   dst
   append

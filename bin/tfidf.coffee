@@ -32,12 +32,19 @@ opts.parse [
   description : 'Adjust vector size to 1.0'
   value       : false
   required    : false
+,
+  short       : 'p'
+  long        : 'chunkSize'
+  description : 'chunkSize (default: 300)'
+  value       : true
+  required    : false
 ]
 src = opts.get 'src'
 dst = opts.get('dst') || "#{src}.tfidf"
 append = opts.get('append') || undefined
 configPath = opts.get('config') || 'config/momonger.conf'
 normalize = opts.get('normalize') || false
+chunkSize = opts.get('chunkSize') || 1000
 
 async   = require 'async'
 Config = require 'momonger/config'
@@ -57,6 +64,7 @@ src.findOne {_id: '.meta'}, (err, meta)->
     runLocal: false
     src: meta.tf
     idf: meta.idf
+    chunkSize
     dst
     append
     normalize
