@@ -11,11 +11,8 @@ class Tf extends MapJob
       @options.query.a = @options.append
 
   beforeFirstMap: (done)->
-    async.series [
-      (done) => @srcMongo.getmeta (err, @meta) ->
-        done err
-      (done) => @dstMongo.createIndex {a: 1}, done
-    ], done
+    @srcMongo.getmeta (err, @meta)=>
+      @dstMongo.createIndex {a: 1}, done
 
   mapper: ->
     class TfMapper extends Mapper

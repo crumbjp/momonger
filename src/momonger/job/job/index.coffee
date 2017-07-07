@@ -37,11 +37,9 @@ class Job
       (done) =>
         return done null unless @dstMongo
         if @options.appendDst
-          console.log '******************remove', {a: @options.append}
           @dstMongo.remove {a: @options.append}, ->
             done null
         else
-          console.log '******************drop'
           @dstMongo.drop ->
             done null
       (done) =>
