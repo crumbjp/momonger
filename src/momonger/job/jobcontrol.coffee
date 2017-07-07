@@ -82,6 +82,7 @@ class JobControl
         else if result
           finish = true
           job = result
+        console.log '=========== wait ================', jobid, finish
         done err
     , (done) ->
       return done false if finish

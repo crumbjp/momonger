@@ -266,7 +266,7 @@ class MapJob extends Job
                 done null
           , done
       (done) =>
-        async.each @jobids, (jobid, done) =>
+        async.eachSeries @jobids, (jobid, done) =>
           @jobcontrol.wait jobid, done
         , done
     ], done
@@ -294,7 +294,7 @@ class MapJob extends Job
                 done null
           , done
       (done) =>
-        async.each @jobids, (jobid, done) =>
+        async.eachSeries @jobids, (jobid, done) =>
           @jobcontrol.wait jobid, done
         , done
     ], done
