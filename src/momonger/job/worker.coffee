@@ -21,7 +21,7 @@ exports.start = (config)->
         unless implData
           empty = true
           return done null
-        console.log "Fetch job", id, implData._id
+        # console.log "Fetch job", id, implData._id
         jobControl.run implData, (err, result)->
           # console.log "Finish job", id, implData._id, err, result
           done null
