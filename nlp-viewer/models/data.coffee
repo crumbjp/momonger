@@ -134,7 +134,7 @@ class Data extends Base
         return done err if err
         for doc in docs
           for field in @meta.fields
-            tfidfById[doc._id][field] = doc.field
+            tfidfById[doc._id][field] = doc['field']
         done err, _.values(tfidfById)
 
 module.exports = Data
