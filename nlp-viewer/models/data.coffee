@@ -122,7 +122,10 @@ class Data extends Base
         $in: ids
     , (err, tfidfs) =>
       return done err if err
-      tfidfById = _.indexBy tfidfs, '_id'
+      tfidfById = {}
+      for tfidf in tfidfs
+        tfidfById[tfidf._id] =
+          loc: tfidf.v
       fields = {}
       for field in @meta.fields
         fields[field] = 1
@@ -134,7 +137,7 @@ class Data extends Base
         return done err if err
         for doc in docs
           for field in @meta.fields
-            tfidfById[doc._id][field] = doc['field']
+            tfidfById[doc._id][field] = doc[field]
         done err, _.values(tfidfById)
 
 module.exports = Data
