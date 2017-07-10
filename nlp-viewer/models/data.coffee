@@ -117,7 +117,7 @@ class Data extends Base
   getDocs: (ids, done)->
     console.log "getDocs #{ids.length}"
 
-    @doc.findAsArray
+    @tfidf.findAsArray
       _id :
         $in: ids
     , (err, tfidfs) =>
@@ -125,6 +125,7 @@ class Data extends Base
       tfidfById = {}
       for tfidf in tfidfs
         tfidfById[tfidf._id] =
+          _id: tfidf._id
           loc: tfidf.v
       fields = {}
       for field in @meta.fields
