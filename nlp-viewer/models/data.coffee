@@ -116,23 +116,25 @@ class Data extends Base
 
   getDocs: (ids, done)->
     console.log "getDocs #{ids.length}"
-    fields = {}
-    for field in @meta.fields
-      fields[field] = 1
+
     @doc.findAsArray
       _id :
         $in: ids
-    , fields
-    , (err, docs) =>
+    , (err, tfidfs) =>
       return done err if err
-      async.eachSeries docs, (doc, done) =>
-        @tfidf.findOne
-          _id: doc._id
-        , (err, tfidf) =>
-          return done err if err or !tfidf
-          doc.loc = tfidf.v
-          done(null)
-      , (err) =>
-        done err, docs
+      tfidfById = _.indexBy tfidfs, '_id'
+      fields = {}
+      for field in @meta.fields
+        fields[field] = 1
+      @doc.findAsArray
+        _id :
+          $in: ids
+      , fields
+      , (err, docs) =>
+        return done err if err
+        for doc in docs
+          for field in @meta.fields
+            tfidfById[doc._id][field] = doc.field
+        done err, _.values(tfidfById)
 
 module.exports = Data
