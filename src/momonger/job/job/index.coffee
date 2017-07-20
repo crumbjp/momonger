@@ -37,6 +37,7 @@ class Job
       (done) =>
         return done null unless @dstMongo
         if @options.appendDst
+          return done null unless @options.append
           @dstMongo.remove {a: @options.append}, ->
             done null
         else

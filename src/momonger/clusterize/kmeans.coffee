@@ -110,6 +110,8 @@ class Kmeans extends Job
                 done null
               (done) =>
                 @dstMongo.createIndex {a: 1}, done
+              (done) =>
+                @dstMongo.createIndex {c: 1}, done
             ], done
 
           map: (doc, done)=>
