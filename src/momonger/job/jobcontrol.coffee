@@ -76,12 +76,16 @@ class JobControl
         writeConcern: 1
         maxTimeMS: 3600000
         wtimeout: 3600000
-      , (err, result)->
+      , (err, result)=>
         if err
           finish = true
         else if result
           finish = true
           job = result
+          return @jobImpl.remove
+            _id: jobid
+          , (err, result)=>
+            done err
         done err
     , (done) ->
       return done false if finish
