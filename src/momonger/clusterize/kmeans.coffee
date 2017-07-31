@@ -45,6 +45,9 @@ class Kmeans extends Job
                   _id:
                     $ne: '.meta'
                 , (err, @clusters)=>
+                  @clusterById = {}
+                  for cluster in @clusters
+                    @clusterById[cluster._id.toString()] = cluster
                   done err
               (done) =>
                 @orgMongo.getmeta (err, @meta) =>
@@ -81,12 +84,14 @@ class Kmeans extends Job
             done null, {d, n, v: normalVector vec}
 
           lastFormat: (value)=>
-            {
+            result = {
               _id: value.id
               v: value.value.v
               d: value.value.d
               n: value.value.n
             }
+            result.name = @clusterById[value.id.toString()].name if @clusterById[value.id.toString()].name
+            result
 
     class KmeansDataJob extends MapJob
       mapper: ->

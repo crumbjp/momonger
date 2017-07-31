@@ -75,7 +75,7 @@ elif [ "${MODE}" = "rebalance" ]; then
     run ./bin/coffee.sh ./bin/df.coffee -s ${BASE_NAME}.tf -d ${BASE_NAME}.df
     run ./bin/coffee.sh ./bin/idf.coffee -s ${BASE_NAME}.df -d ${BASE_NAME}.idf --noun-only --use-dictionary-coefficient --filter-noise
     run ./bin/coffee.sh ./bin/tfidf.coffee -s ${BASE_NAME}.idf -d ${BASE_NAME}.tfidf --normalize
-    run ./bin/coffee.sh ./bin/kmeans.coffee -s ${BASE_NAME}.tfidf -d ${BASE_NAME}.kmeans --cluster ${BASE_NAME}.canopy --iterate 20
+    run ./bin/coffee.sh ./bin/kmeans.coffee -s ${BASE_NAME}.tfidf -d ${BASE_NAME}.kmeans --cluster ${CLUSTER} --iterate 20
 elif [ "${MODE}" = "append" ]; then
     APPEND=`date +'%Y%m%d%H%M%S'`
     run ./bin/coffee.sh ./bin/prepare_append.coffee -s ${ORIGIN_COLLECTION} -a ${APPEND}
