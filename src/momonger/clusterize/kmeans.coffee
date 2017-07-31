@@ -142,7 +142,9 @@ class Kmeans extends Job
             done null
 
           afterRun: (done)->
-            @dstMongo.bulkInsert @results, done
+            @dstMongo.bulkInsert @results, (err) =>
+              console.log(err) if err
+              done err
 
       afterRun: (done)->
         @clusterMongo = Mongo.getByNS @config, @options.cluster
