@@ -68,6 +68,7 @@ elif [ "${MODE}" = "first" ]; then
 elif [ "${MODE}" = "rebalance" ]; then
     if [ "$CLUSTER" = "" ]; then
         run ./bin/coffee.sh ./bin/copy_collection.coffee -s ${BASE_NAME}.kmeans.cluster -d ${BASE_NAME}.tmp_cluster
+        CLUSTER="${BASE_NAME}.tmp_cluster"
     fi
     run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -f title,body
     run ./bin/coffee.sh ./bin/tf.coffee -s ${BASE_NAME}.token -d ${BASE_NAME}.tf

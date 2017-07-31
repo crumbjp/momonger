@@ -30,7 +30,7 @@ class Kmeans extends Job
         @clusterMongo.findAsArray (err, @clusters)=>
           done err
       (done) =>
-        @clusterMongo.getmeta (err, @meta)=>
+        @srcMongo.getmeta (err, @meta) =>
           done err
     ], done
   run: (done)->
@@ -47,7 +47,7 @@ class Kmeans extends Job
                 , (err, @clusters)=>
                   done err
               (done) =>
-                @clusterMongo.getmeta (err, @meta)=>
+                @orgMongo.getmeta (err, @meta) =>
                   done err
               (done) =>
                 @diffFunc = diffVector
@@ -102,7 +102,7 @@ class Kmeans extends Job
                 , (err, @clusters)=>
                   done err
               (done) =>
-                @clusterMongo.getmeta (err, @meta)=>
+                @orgMongo.getmeta (err, @meta) =>
                   done err
               (done) =>
                 @diffFunc = diffVector
@@ -148,7 +148,7 @@ class Kmeans extends Job
 
       afterRun: (done)->
         @clusterMongo = Mongo.getByNS @config, @options.cluster
-        @clusterMongo.getmeta (err, @meta)=>
+        @srcMongo.getmeta (err, @meta) =>
           return done null if @options.append?
           @dstMongo.insert @meta, done
 

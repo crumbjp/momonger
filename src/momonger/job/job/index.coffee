@@ -76,6 +76,8 @@ class Mapper extends Job
   constructor: (@jobcontrol, @jobid, @config, @options)->
     @ids ||= @options.map?.ids
     @ids ||= @options.reduce?.ids
+    @options.org ||= @options.src
+    @orgMongo = Mongo.getByNS @config, @options.org
     @emitDataById = {}
 
   emit: (id, value) ->
@@ -246,6 +248,7 @@ class MapJob extends Job
 
   _createReducer: (ids, done)->
     options = _.extend {}, @options, {
+      org: @options.src
       src: @options.emit
       reduce:
         ids: ids
