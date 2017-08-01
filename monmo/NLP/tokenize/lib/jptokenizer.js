@@ -335,85 +335,126 @@ JPTokenizer.prototype.parse_original = function(sentence, word, type, done) {
 
 JPTokenizer.prototype.original_candidate = function(sentence, done){
   var self = this;
-  var match;
-  if ( (match = sentence.match(this.morpho.re_date1)) ||  (match = sentence.match(this.morpho.re_date2)) ) {
-    return done(null, { match: match[0], type: 'DATE'});
-  }else if ( match = sentence.match(this.morpho.re_number1) ) {
-    return done(null, { match: match[0], type: 'NUMBER'});
-  }else if ( match = alphabet(sentence) ) {
-    return done(null, { match: match, type: 'EN'});
-  }else if ( match = katakana(sentence) ) {
-    if (!this.separateLoanWord){
-      return done(null, { match: match, type: '外来'});
-    }
-    function search_katakana_combination(str, done) {
-      if(str.length == 0) {
-        return done(null, []);
+  self.longest_match(sentence, function(err, word, candidate){
+    var match;
+    if ( (match = sentence.match(self.morpho.re_date1)) ||  (match = sentence.match(self.morpho.re_date2)) ) {
+      if ( word && match[0].length < word.length ){
+        return done(null, { match: '', type: null});
       }
-      var finished = false;
-      var results = [];
-      self.async.during(
-        function(done){
-          done(null, !finished);
-        },
-        function(done){
-          var query = {
-            h: str.substring(0, self.dictionary.nheads()),
-            l: { $gte: 2 }
-          };
-          self.dictionary.findCandidates(query, function(err, candidates){
-            self.async.eachSeries(candidates, function(candidate, done) {
-              if ( typeof candidate.w != 'string' ){
-                return done(null);
-              }
-              var head = str.substring(0,candidate.w.length);
-              if ( candidate.w === head ) {
-                return search_katakana_combination(str.substring(candidate.w.length), function(err, res) {
-                  if( err ) {
-                    return done(null);
-                  }
-                  finished = true;
-                  res.push(candidate);
-                  results = res;
-                  return done('match');
-                });
-              }
-              return done(null);
-            }, function(err){
-              if( !finished ) {
-                return done('unmatch');
-              }
-              if( results.length > 1 ) {
-                var score = 0;
-                for( var result of results ) {
-                  score += 1 / Math.sqrt(result.l);
-                }
-                if ( score / results.length > 0.577 ) {
-                  finished = true;
-                  return done('reset');
-                }
-              }
-              return done(null);
-            });
-          });
-        }, function(err){
-          if ( err == 'reset' ) {
-            return done(err, []);
-          }
-          return done(err, results);
-        });
-    }
-    search_katakana_combination(match, function(err, results) {
-      if(err){
+      return done(null, { match: match[0], type: 'DATE'});
+    }else if ( match = sentence.match(self.morpho.re_number1) ) {
+      if ( word && match[0].length < word.length ){
+        return done(null, { match: '', type: null});
+      }
+      return done(null, { match: match[0], type: 'NUMBER'});
+    }else if ( match = alphabet(sentence) ) {
+      if ( word && match.length < word.length ){
+        return done(null, { match: '', type: null});
+      }
+      return done(null, { match: match, type: 'EN'});
+    }else if ( match = katakana(sentence) ) {
+      if ( word && match.length < word.length ){
+        return done(null, { match: '', type: null});
+      }
+      if (!self.separateLoanWord){
         return done(null, { match: match, type: '外来'});
       }
-      return done(null, results.reverse());
-    });
-  } else if ( isIgnore(sentence) ) {
-    return done(null, null);
-  } else {
-    return done(null, { match: '', type: null});
-  }
+      function search_katakana_combination(str, done) {
+        if(str.length == 0) {
+          return done(null, []);
+        }
+        var finished = false;
+        var results = [];
+        self.async.during(
+          function(done){
+            done(null, !finished);
+          },
+          function(done){
+            var query = {
+              h: str.substring(0, self.dictionary.nheads()),
+              l: { $gte: 2 }
+            };
+            self.dictionary.findCandidates(query, function(err, candidates){
+              self.async.eachSeries(candidates, function(candidate, done) {
+                if ( typeof candidate.w != 'string' ){
+                  return done(null);
+                }
+                var head = str.substring(0,candidate.w.length);
+                if ( candidate.w === head ) {
+                  return search_katakana_combination(str.substring(candidate.w.length), function(err, res) {
+                    if( err ) {
+                      return done(null);
+                    }
+                    finished = true;
+                    res.push(candidate);
+                    results = res;
+                    return done('match');
+                  });
+                }
+                return done(null);
+              }, function(err){
+                if( !finished ) {
+                  return done('unmatch');
+                }
+                if( results.length > 1 ) {
+                  var score = 0;
+                  for( var result of results ) {
+                    score += 1 / Math.sqrt(result.l);
+                  }
+                  if ( score / results.length > 0.577 ) {
+                    finished = true;
+                    return done('reset');
+                  }
+                }
+                return done(null);
+              });
+            });
+          }, function(err){
+            if ( err == 'reset' ) {
+              return done(err, []);
+            }
+            return done(err, results);
+          });
+      }
+      search_katakana_combination(match, function(err, results) {
+        if(err){
+          return done(null, { match: match, type: '外来'});
+        }
+        return done(null, results.reverse());
+      });
+    } else if ( isIgnore(sentence) ) {
+      return done(null, null);
+    } else {
+      return done(null, { match: '', type: null});
+    }
+  });
+}
+
+JPTokenizer.prototype.longest_match = function(sentence, done){
+  var self = this;
+  self.nquery++;
+  var query = {
+    h: sentence.substring(0,self.dictionary.nheads())
+  };
+  self.dictionary.findCandidates(query, function(err, candidates){
+    for (var candidate of candidates) {
+      self.nfetch++;
+      if ( typeof candidate.w === 'string' ){
+        var head = sentence.substring(0,candidate.w.length);
+        if ( candidate.w == head ) {
+          return done(null, head, candidate);
+        }
+      }else{
+        for( var word of candidate.w ) {
+          var head = sentence.substring(0,word.length);
+          if ( word == head ) {
+            return done(null, head, candidate);
+          }
+        }
+      }
+    }
+    done(null);
+  });
 }
 
 JPTokenizer.prototype.parse_query = function(current, sentence, query, done){
