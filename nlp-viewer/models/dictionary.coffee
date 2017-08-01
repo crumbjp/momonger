@@ -17,8 +17,13 @@ class Dictionary extends Mongo
 
   search: (search, options, done)->
     query =
-      w:
-        $regex: search
+      '$or': [
+        w:
+          $regex: search
+      ,
+        sy:
+          $regex: search
+      ]
     @findAsArray _.extend(query, options), done
 
   put: (word, t, done)->
