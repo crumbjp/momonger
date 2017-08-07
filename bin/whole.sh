@@ -18,13 +18,14 @@ Options :
     -b, --base        base_name   : ex> momonger.sampledoc_dst
     -m, --mode        mode        : phrase, first, append, rebalance
     -c, --cluster     collection  :  for rebalance-mode
+    -a, --append      append_id   :  for append-mode
     -d, --dryrun                  : dry-run mode
 
 USAGE
     exit $1
 }
 
-while getopts ':ho:b:m:c:d' OPTION; do
+while getopts ':ho:b:m:c:a:d' OPTION; do
     echo $OPTION $OPTARG
     case $OPTION in
         h|--help)       usage 0 ;;
@@ -32,6 +33,7 @@ while getopts ':ho:b:m:c:d' OPTION; do
         b|--base)       BASE_NAME="${OPTARG}";;
         m|--mode)       MODE="${OPTARG}";;
         c|--cluster)    CLUSTER="${OPTARG}";;
+        a|--append)     APPEND="${OPTARG}";;
         d|--dryrun)     DRY="1";;
         --) break;;
     esac
@@ -77,8 +79,10 @@ elif [ "${MODE}" = "rebalance" ]; then
     run ./bin/coffee.sh ./bin/tfidf.coffee -s ${BASE_NAME}.idf -d ${BASE_NAME}.tfidf --normalize
     run ./bin/coffee.sh ./bin/kmeans.coffee -s ${BASE_NAME}.tfidf -d ${BASE_NAME}.kmeans --cluster ${CLUSTER} --iterate 20
 elif [ "${MODE}" = "append" ]; then
-    APPEND=`date +'%Y%m%d%H%M%S'`
-    run ./bin/coffee.sh ./bin/prepare_append.coffee -s ${ORIGIN_COLLECTION} -a ${APPEND}
+    if [ "$APPEND" = "" ]; then
+        APPEND=`date +'%Y%m%d%H%M%S'`
+        run ./bin/coffee.sh ./bin/prepare_append.coffee -s ${ORIGIN_COLLECTION} -a ${APPEND}
+    fi
     run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -f title,body
     run ./bin/coffee.sh ./bin/tf.coffee -s ${BASE_NAME}.token -d ${BASE_NAME}.tf -a ${APPEND}
     run ./bin/coffee.sh ./bin/tfidf.coffee -s ${BASE_NAME}.idf -d ${BASE_NAME}.tfidf --normalize -a ${APPEND}
