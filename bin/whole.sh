@@ -86,7 +86,7 @@ elif [ "${MODE}" = "append" ]; then
     run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -f title,body
     run ./bin/coffee.sh ./bin/tf.coffee -s ${BASE_NAME}.token -d ${BASE_NAME}.tf -a ${APPEND}
     run ./bin/coffee.sh ./bin/tfidf.coffee -s ${BASE_NAME}.idf -d ${BASE_NAME}.tfidf --normalize -a ${APPEND}
-    run ./bin/coffee.sh ./bin/kmeans.coffee -s ${BASE_NAME}.tfidf -d ${BASE_NAME}.kmeans -a first
+    run ./bin/coffee.sh ./bin/kmeans.coffee -s ${BASE_NAME}.tfidf -d ${BASE_NAME}.kmeans -a ${APPEND}
 else
     echo "ERROR: unknown mode ${MODE}!"
     exit 1
