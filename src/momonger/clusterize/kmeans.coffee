@@ -159,8 +159,8 @@ class Kmeans extends Job
 
     if @options.append
       options = _.extend {}, @options, {
-        dst: @meta.kmeans.data
-        cluster: @meta.kmeans.cluster
+        dst: "#{@options.dst}.data"
+        cluster: "#{@options.dst}.cluster"
       }
       @jobcontrol.put KmeansDataJob, options, (err, jobid)=>
         return err if err
