@@ -83,7 +83,7 @@ elif [ "${MODE}" = "append" ]; then
         APPEND=`date +'%Y%m%d%H%M%S'`
         run ./bin/coffee.sh ./bin/prepare_append.coffee -s ${ORIGIN_COLLECTION} -a ${APPEND}
     fi
-    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -f title,body
+    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -f title,body -a ${APPEND}
     run ./bin/coffee.sh ./bin/tf.coffee -s ${BASE_NAME}.token -d ${BASE_NAME}.tf -a ${APPEND}
     run ./bin/coffee.sh ./bin/tfidf.coffee -s ${BASE_NAME}.idf -d ${BASE_NAME}.tfidf --normalize -a ${APPEND}
     run ./bin/coffee.sh ./bin/kmeans.coffee -s ${BASE_NAME}.tfidf -d ${BASE_NAME}.kmeans -a ${APPEND}
