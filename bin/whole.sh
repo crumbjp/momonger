@@ -20,13 +20,15 @@ Options :
     -c, --cluster     collection  :  for rebalance-mode
     -a, --append      append_id   :  for append-mode: Append {a: <append_id>} records
     -n, --new-append  append_id   :  for append-mode: Append {a: null} records
+    -p, --chunk-size  chunk_size  :  for tokenize
+    -f, --fields      fields      :  , delimited fields
     -d, --dryrun                  : dry-run mode
 
 USAGE
     exit $1
 }
 
-while getopts ':ho:b:m:c:a:n:d' OPTION; do
+while getopts ':ho:b:m:c:a:n:p:f:d' OPTION; do
     echo $OPTION $OPTARG
     case $OPTION in
         h|--help)       usage 0 ;;
@@ -36,6 +38,8 @@ while getopts ':ho:b:m:c:a:n:d' OPTION; do
         c|--cluster)    CLUSTER="${OPTARG}";;
         a|--append)     APPEND="${OPTARG}";;
         n|--new-append) NEW_APPEND="${OPTARG}";;
+        p|--chunk-size) CHUNK_SIZE="${OPTARG}";;
+        f|--fields)     FIELDS="${OPTARG}";;
         d|--dryrun)     DRY="1";;
         --) break;;
     esac
@@ -46,8 +50,17 @@ if [ "${ORIGIN_COLLECTION}" = "" ]; then
     exit 1
 fi
 
+if [ "${FIELDS}" = "" ]; then
+    echo "fields is required !"
+    exit 1
+fi
+
 if [ "${BASE_NAME}" = "" ]; then
     BASE_NAME="${ORIGIN_COLLECTION}"
+fi
+
+if [ "$CHUNK_SIZE" = "" ]; then
+    CHUNK_SIZE=300
 fi
 
 function run {
@@ -59,10 +72,10 @@ function run {
 }
 
 if [ "${MODE}" = "phrase" ]; then
-    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -f title,body
+    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -p ${CHUNK_SIZE} -f ${FIELDS}
     run ./bin/coffee.sh ./bin/phrase.coffee -s ${BASE_NAME}.token -d ${BASE_NAME}.phrase
 elif [ "${MODE}" = "first" ]; then
-    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -f title,body
+    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -p ${CHUNK_SIZE} -f ${FIELDS}
     run ./bin/coffee.sh ./bin/tf.coffee -s ${BASE_NAME}.token -d ${BASE_NAME}.tf
     run ./bin/coffee.sh ./bin/df.coffee -s ${BASE_NAME}.tf -d ${BASE_NAME}.df
     run ./bin/coffee.sh ./bin/idf.coffee -s ${BASE_NAME}.df -d ${BASE_NAME}.idf --noun-only --use-dictionary-coefficient --filter-noise
@@ -74,7 +87,7 @@ elif [ "${MODE}" = "rebalance" ]; then
         run ./bin/coffee.sh ./bin/copy_collection.coffee -s ${BASE_NAME}.kmeans.cluster -d ${BASE_NAME}.tmp_cluster
         CLUSTER="${BASE_NAME}.tmp_cluster"
     fi
-    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -f title,body
+    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -p ${CHUNK_SIZE} -f ${FIELDS}
     run ./bin/coffee.sh ./bin/tf.coffee -s ${BASE_NAME}.token -d ${BASE_NAME}.tf
     run ./bin/coffee.sh ./bin/df.coffee -s ${BASE_NAME}.tf -d ${BASE_NAME}.df
     run ./bin/coffee.sh ./bin/idf.coffee -s ${BASE_NAME}.df -d ${BASE_NAME}.idf --noun-only --use-dictionary-coefficient --filter-noise
@@ -89,7 +102,7 @@ elif [ "${MODE}" = "append" ]; then
         echo 'append_id not specified !'
         exit 1
     fi
-    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -f title,body -a ${APPEND}
+    run ./bin/coffee.sh ./bin/tokenize.coffee -s ${ORIGIN_COLLECTION} -d ${BASE_NAME}.token -p ${CHUNK_SIZE} -f ${FIELDS} -a ${APPEND}
     run ./bin/coffee.sh ./bin/tf.coffee -s ${BASE_NAME}.token -d ${BASE_NAME}.tf -a ${APPEND}
     run ./bin/coffee.sh ./bin/tfidf.coffee -s ${BASE_NAME}.idf -d ${BASE_NAME}.tfidf --normalize -a ${APPEND}
     run ./bin/coffee.sh ./bin/kmeans.coffee -s ${BASE_NAME}.tfidf -d ${BASE_NAME}.kmeans -a ${APPEND}
