@@ -138,16 +138,17 @@ class Kmeans extends Job
               clusterScore.s = (1 - clusterScore.s) / sum
             clusterScores.sort (a, b)-> b.s - a.s
 
-            @results.push {
+            @results.push [{
               _id: doc._id
+            }, {
               c: id
               cs: clusterScores
               a: @options.append
-            }
+            }, true]
             done null
 
           afterRun: (done)->
-            @dstMongo.bulkInsert @results, (err) =>
+            @dstMongo.bulkUpdate @results, (err) =>
               console.log(err) if err
               done err
 
