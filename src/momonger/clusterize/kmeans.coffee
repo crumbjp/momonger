@@ -144,7 +144,7 @@ class Kmeans extends Job
               c: id
               cs: clusterScores
               a: @options.append
-            }, true]
+            }]
             done null
 
           afterRun: (done)->

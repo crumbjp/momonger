@@ -626,9 +626,10 @@ JPTokenizer.prototype.parse_doc = function(docid, doc, done){
             candidates,
             function(candidate, done){
               var word = doc.substring(pos,pos+candidate.l);
+              var current_pos = pos;
               pos += candidate.l;
               current = candidate;
-              return self.result(pos, word, candidate, done);
+              return self.result(current_pos, word, candidate, done);
             },
             done);
         }
@@ -645,17 +646,19 @@ JPTokenizer.prototype.parse_doc = function(docid, doc, done){
         if ( matches ) {
           word = matches[0];
           candidate = {w:word,l:word.length,s:9999,t:["不明"]};
+          var current_pos = pos;
           pos+= candidate.l;
           current = candidate;
-          return self.result(pos,word,candidate, done);
+          return self.result(current_pos,word,candidate, done);
         }else{
           self.dictionary.findBest(ascii2multi(word), function(err, candidate){
             if ( !candidate ) {
               candidate = {w:word,l:word.length,s:9999,t:["不明"]};
             }
+            var current_pos = pos;
             pos++;
             current = candidate;
-            return self.result(pos,word,candidate, done);
+            return self.result(current_pos,word,candidate, done);
           });
         }
       });
