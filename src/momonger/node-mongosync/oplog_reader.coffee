@@ -59,8 +59,10 @@ class OplogReader
         sort:
           $natural: 1
         tailable: true
-        awaitdata: true
+        awaitData: true
         timeout: false
+        noCursorTimeout: true
+        oplogReplay: true # Directly seek to the newest oplog documents!
         # batchSize: (@config.options.bulkLimit * 2)
       , (err, cursor) =>
         return done err if err
