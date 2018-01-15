@@ -124,7 +124,7 @@ class OplogReader
       done? err
 
   start: (ts, eachCallback, bulkCallback, done) ->
-    @run ts, eachCallback, bulkCallback, (err) ->
+    @run ts, eachCallback, bulkCallback, (err) =>
       clearInterval @tailOplogInterval
       @tailOplogInterval = null
       clearInterval @bulkInterval
