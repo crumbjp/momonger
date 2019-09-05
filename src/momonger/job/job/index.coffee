@@ -149,10 +149,11 @@ class Mapper extends Job
         emitIdById[typeVal] ||= [
           _id: typeVal
         ,
-          $pushAll:
-            ids: []
+          $push:
+            ids:
+              $each: []
         ]
-        emitIdById[typeVal][1].$pushAll.ids.push emitData._id
+        emitIdById[typeVal][1].$push.ids.$each.push emitData._id
       async.parallel [
         (done) => @emitMongo.bulkInsert emitDatas, done
         (done) => @emitidsMongo.bulkUpdate _.values(emitIdById), done
